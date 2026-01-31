@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AdminOrgName>xperience-community-component-registry</AdminOrgName>
+  </PropertyGroup>
+  <ItemGroup>
+    <AdminClientPath Include="Client\dist\**">
+      <ProjectName>web-admin</ProjectName>
+    </AdminClientPath>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Remove="Client\node_modules\**" />
+    <EmbeddedResource Remove="Client\node_modules\**" />
+    <None Remove="Client\node_modules\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <AssemblyAttribute Include="CMS.AssemblyDiscoverableAttribute"></AssemblyAttribute>
+  </ItemGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="kentico.xperience.admin" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\XperienceCommunity.ComponentRegistry\XperienceCommunity.ComponentRegistry.csproj" />
+  </ItemGroup>
+</Project>

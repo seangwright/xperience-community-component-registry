@@ -1,0 +1,12 @@
+<Solution>
+  <Folder Name="/examples/">
+    <Project Path="examples/DancingGoat/DancingGoat.csproj" />
+  </Folder>
+  <Folder Name="/src/">
+    <Project Path="src/XperienceCommunity.ComponentRegistry.Admin/XperienceCommunity.ComponentRegistry.Admin.csproj" />
+    <Project Path="src/XperienceCommunity.ComponentRegistry/XperienceCommunity.ComponentRegistry.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/XperienceCommunity.ComponentRegistry.Tests/XperienceCommunity.ComponentRegistry.Tests.csproj" />
+  </Folder>
+</Solution>
