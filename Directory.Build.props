@@ -32,8 +32,6 @@
     <NoWarn>$(NoWarn);KXE0003;KXE0004;1591</NoWarn>
     <RootNamespace>XperienceCommunity.ComponentRegistry</RootNamespace>
     <HotChocolateImplicitUsings>disable</HotChocolateImplicitUsings>
-
-    <EnableDefaultEmbeddedResourceItems>false</EnableDefaultEmbeddedResourceItems>
   </PropertyGroup>
 
   <PropertyGroup Condition=" $(Configuration) == 'Release' ">

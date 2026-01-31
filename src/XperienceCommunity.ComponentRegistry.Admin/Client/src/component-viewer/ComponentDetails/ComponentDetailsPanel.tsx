@@ -1,35 +1,7 @@
 import React from 'react';
 import { PageList } from './PageList';
 import { UsageStatistics } from './UsageStatistics';
-
-interface PageVariantDto {
-  contentItemCommonDataId: number;
-  languageName: string;
-  lastModified?: string;
-  configurationJson: string;
-  configurationType: string;
-}
-
-interface PageUsageDto {
-  webPageItemId: number;
-  contentItemId: number;
-  pageName: string;
-  pagePath: string;
-  channelDisplayName: string;
-  isPublished: boolean;
-  createdAt: string;
-  modifiedAt?: string;
-  variants: PageVariantDto[];
-}
-
-interface ComponentUsageDetailDto {
-  componentIdentifier: string;
-  componentType: string;
-  totalPagesUsing: number;
-  totalVariants: number;
-  lastModified?: string;
-  pages: PageUsageDto[];
-}
+import { ComponentUsageDetailDto } from './types';
 
 interface ComponentDetailsPanelProps {
   data: ComponentUsageDetailDto;

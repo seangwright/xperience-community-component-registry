@@ -3,9 +3,11 @@ using CMS.Membership;
 using XperienceCommunity.ComponentRegistry.Admin;
 
 using Kentico.Xperience.Admin.Base;
+using CMS.Core;
+using Kentico.Builder.Web.Mvc;
 
 [assembly: UIPage(
-    uiPageType: typeof(ComponentViewerPage),
+    uiPageType: typeof(PageBuilderComponentViewerPage),
     parentType: typeof(ComponentRegistryApplicationPage),
     slug: "page-builder",
     name: "Page Builder",
@@ -19,29 +21,38 @@ namespace XperienceCommunity.ComponentRegistry.Admin;
 /// Page for displaying all registered component definitions.
 /// </summary>
 [UIPermission(SystemPermissions.VIEW)]
-public class ComponentViewerPage(
+public class PageBuilderComponentViewerPage(
     IComponentDefinitionStore<PageBuilderWidgetDefinition> widgetStore,
     IComponentDefinitionStore<PageBuilderSectionDefinition> sectionStore,
     IComponentDefinitionStore<PageBuilderPageTemplateDefinition> pageTemplateStore,
-    IComponentUsageService componentUsageService) : Page<ComponentViewerPageClientProperties>
+    IComponentUsageService componentUsageService,
+    IAdminBuildersLocalizationService localizer) : Page<PageBuilderComponentViewerPageClientProperties>
 {
-    public override Task<ComponentViewerPageClientProperties> ConfigureTemplateProperties(
-        ComponentViewerPageClientProperties properties)
+    public override Task<PageBuilderComponentViewerPageClientProperties> ConfigureTemplateProperties(
+        PageBuilderComponentViewerPageClientProperties properties)
     {
         var widgets = widgetStore.GetAll()
-            .Select(w => new ComponentDto(
+            .Select(w =>
+            {
+                string gs = localizer.GetString(w.Name);
+                string ls = localizer.LocalizeString(w.Name);
+                string gs2 = localizer.GetString(w.Description);
+                string ls2 = localizer.LocalizeString(w.Description);
+
+                return new ComponentDto(
                 w.Identifier,
-                w.Name,
-                w.Description,
+                localizer.LocalizeString(w.Name),
+                localizer.LocalizeString(w.Description),
                 w.IconClass,
-                w.MarkedType?.FullName))
+                w.MarkedType?.FullName);
+            })
             .ToList();
 
         var sections = sectionStore.GetAll()
             .Select(s => new ComponentDto(
                 s.Identifier,
-                s.Name,
-                s.Description,
+                localizer.LocalizeString(s.Name),
+                localizer.LocalizeString(s.Description),
                 s.IconClass,
                 s.MarkedType?.FullName))
             .ToList();
@@ -49,8 +60,8 @@ public class ComponentViewerPage(
         var pageTemplates = pageTemplateStore.GetAll()
             .Select(pt => new PageTemplateDto(
                 pt.Identifier,
-                pt.Name,
-                pt.Description,
+                localizer.LocalizeString(pt.Name),
+                localizer.LocalizeString(pt.Description),
                 pt.IconClass,
                 pt.MarkedType?.FullName,
                 pt.ContentTypeNames))
@@ -87,7 +98,7 @@ public class ComponentViewerPage(
 /// <summary>
 /// Client properties for the component viewer page.
 /// </summary>
-public class ComponentViewerPageClientProperties : TemplateClientProperties
+public class PageBuilderComponentViewerPageClientProperties : TemplateClientProperties
 {
     public IEnumerable<ComponentDto> Widgets { get; set; } = [];
     public IEnumerable<ComponentDto> Sections { get; set; } = [];

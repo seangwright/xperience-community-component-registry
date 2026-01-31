@@ -5,6 +5,9 @@
     <SeparatedAdmin Condition="'$(SeparatedAdmin)' == ''">false</SeparatedAdmin>
     <Nullable>annotations</Nullable>
     <RunAnalyzersDuringBuild>false</RunAnalyzersDuringBuild>
+    <!-- This ensures Lucene index file modifications do not cause a hot reload when using dotnet watch -->
+    <!-- See https://github.com/dotnet/sdk/issues/44910#issuecomment-3533124997 -->
+    <DefaultItemExcludes>$(DefaultItemExcludes);**/App_Data/**;**/assets/**;**/node_modules/**</DefaultItemExcludes>
   </PropertyGroup>
   <ItemGroup>
     <None Remove="App_Data\CMSModules\WebFarm\webfarm.sync" />

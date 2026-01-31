@@ -4,6 +4,7 @@ export interface PageVariantDto {
   lastModified?: string;
   configurationJson: string;
   configurationType: string;
+  isPublished?: boolean;
 }
 
 export interface PageUsageDto {
@@ -16,4 +17,30 @@ export interface PageUsageDto {
   createdAt: string;
   modifiedAt?: string;
   variants: PageVariantDto[];
+}
+
+export interface ComponentUsageDetailDto {
+  componentIdentifier: string;
+  componentType: string;
+  totalPagesUsing: number;
+  totalVariants: number;
+  lastModified?: string;
+  pages: PageUsageDto[];
+}
+
+export interface ComponentDto {
+  identifier: string;
+  name: string;
+  description?: string;
+  iconClass?: string;
+  markedTypeName?: string;
+}
+
+export interface PageTemplateDto {
+  identifier: string;
+  name: string;
+  description?: string;
+  iconClass?: string;
+  markedTypeName?: string;
+  contentTypeNames: string[];
 }

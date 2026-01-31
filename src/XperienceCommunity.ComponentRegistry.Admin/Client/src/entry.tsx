@@ -1,3 +1,3 @@
-import 'globals.css';
+import './globals.css';
 
 export * from './component-viewer/PageBuilderComponentViewerTemplate';

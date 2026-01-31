@@ -18,37 +18,16 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import { ChevronDown, Loader } from 'lucide-react';
 import { usePageCommand } from '@kentico/xperience-admin-base';
 import { ComponentDetailsPanel } from './ComponentDetails';
+import {
+  ComponentDto,
+  ComponentUsageDetailDto,
+  PageTemplateDto,
+} from './ComponentDetails/types';
 
-interface ComponentViewerClientProperties {
+interface PageBuilderComponentViewerClientProperties {
   widgets: ComponentDto[];
   sections: ComponentDto[];
   pageTemplates: PageTemplateDto[];
-}
-
-type ComponentDto = {
-  identifier: string;
-  name: string;
-  description?: string;
-  iconClass?: string;
-  markedTypeName?: string;
-};
-
-type PageTemplateDto = {
-  identifier: string;
-  name: string;
-  description?: string;
-  iconClass?: string;
-  markedTypeName?: string;
-  contentTypeNames: string[];
-};
-
-interface ComponentUsageDetailDto {
-  componentIdentifier: string;
-  componentType: string;
-  totalPagesUsing: number;
-  totalVariants: number;
-  lastModified?: string;
-  pages: unknown[];
 }
 
 // Table row component with expandable details
@@ -200,8 +179,8 @@ const ComponentTableRow: React.FC<{
   );
 };
 
-export const ComponentViewerTemplate = (
-  props: ComponentViewerClientProperties,
+export const PageBuilderComponentViewerTemplate = (
+  props: PageBuilderComponentViewerClientProperties,
 ) => {
   const totalComponents =
     props.widgets.length + props.sections.length + props.pageTemplates.length;

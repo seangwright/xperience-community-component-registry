@@ -22,8 +22,6 @@ public static class ServiceCollectionComponentRegistryExtensions
 
     public static IServiceCollection AddComponentRegistry(this IServiceCollection services, IEnumerable<Assembly> assembliesToScan)
     {
-        var assembly = Assembly.GetExecutingAssembly();
-
         var widgetStore = new ComponentDefinitionStore<PageBuilderWidgetDefinition>();
         var widgetAttrs = assembliesToScan
             .SelectMany(a => a.GetCustomAttributes(typeof(RegisterWidgetAttribute), inherit: false))
@@ -41,7 +39,8 @@ public static class ServiceCollectionComponentRegistryExtensions
             widgetStore.Add(definition);
         }
         var sectionStore = new ComponentDefinitionStore<PageBuilderSectionDefinition>();
-        var sectionAttrs = assembly.GetCustomAttributes(typeof(RegisterSectionAttribute), inherit: false)
+        var sectionAttrs = assembliesToScan
+            .SelectMany(a => a.GetCustomAttributes(typeof(RegisterSectionAttribute), inherit: false))
             .Cast<RegisterSectionAttribute>();
 
         foreach (var attr in sectionAttrs)
@@ -55,7 +54,8 @@ public static class ServiceCollectionComponentRegistryExtensions
             sectionStore.Add(definition);
         }
         var templateStore = new ComponentDefinitionStore<PageBuilderPageTemplateDefinition>();
-        var templateAttrs = assembly.GetCustomAttributes(typeof(RegisterPageTemplateAttribute), inherit: false)
+        var templateAttrs = assembliesToScan
+            .SelectMany(a => a.GetCustomAttributes(typeof(RegisterPageTemplateAttribute), inherit: false))
             .Cast<RegisterPageTemplateAttribute>();
 
         foreach (var attr in templateAttrs)

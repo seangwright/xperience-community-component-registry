@@ -1,13 +1,6 @@
 import React from 'react';
 import { LanguageVariantItem } from './LanguageVariantItem';
-
-interface PageVariantDto {
-  contentItemCommonDataId: number;
-  languageName: string;
-  lastModified?: string;
-  configurationJson: string;
-  configurationType: string;
-}
+import { PageVariantDto } from './types';
 
 interface LanguageVariantListProps {
   variants: PageVariantDto[];

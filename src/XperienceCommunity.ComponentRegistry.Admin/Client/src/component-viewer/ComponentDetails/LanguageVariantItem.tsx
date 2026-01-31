@@ -1,15 +1,7 @@
 import React, { useState } from 'react';
 import { ChevronDown } from 'lucide-react';
 import { JsonViewer } from './JsonViewer';
-
-interface PageVariantDto {
-  contentItemCommonDataId: number;
-  languageName: string;
-  lastModified?: string;
-  configurationJson: string;
-  configurationType: string;
-  isPublished: boolean;
-}
+import { PageVariantDto } from './types';
 
 interface LanguageVariantItemProps {
   variant: PageVariantDto;
