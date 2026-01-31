@@ -4,25 +4,35 @@
     {
       "type": "npm",
       "script": "install",
-      "path": "src/Kentico.Xperience.RepoTemplate/Admin/Client",
+      "path": "src/XperienceCommunity.ComponentRegistry.Admin/Client",
       "group": "build",
       "problemMatcher": [],
-      "label": "npm: install - src/Kentico.Xperience.RepoTemplate/Admin/Client",
+      "label": "npm: install - src/XperienceCommunity.ComponentRegistry.Admin/Client",
       "detail": "install dependencies from package"
     },
     {
-      "type": "dotnet",
-      "task": "build",
-      "problemMatcher": ["$msCompile"],
-      "group": "build",
-      "label": "dotnet: build"
+      "label": ".NET: build (Solution)",
+      "type": "shell",
+      "command": "dotnet build",
+      "problemMatcher": "$msCompile",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared",
+        "showReuseMessage": true,
+        "clear": false
+      }
     },
     {
       "type": "shell",
       "command": "dotnet",
       "args": [
         "format",
-        "Kentico.Xperience.RepoTemplate.sln",
+        "XperienceCommunity.ComponentRegistry.sln",
         "--exclude",
         "./examples/**"
       ],
@@ -40,28 +50,37 @@
     {
       "type": "npm",
       "script": "build",
-      "path": "src/Kentico.Xperience.RepoTemplate/Admin/Client",
+      "path": "src/XperienceCommunity.ComponentRegistry.Admin/Client",
       "group": "build",
       "problemMatcher": [],
-      "label": "npm: build - src/Kentico.Xperience.RepoTemplate/Admin/Client",
-      "detail": "webpack --mode=production"
+      "label": "npm: build - src/XperienceCommunity.ComponentRegistry.Admin/Client",
+      "detail": "webpack --mode=production",
+      "dependsOn": [
+        "npm: install - src/XperienceCommunity.ComponentRegistry.Admin/Client"
+      ]
     },
     {
       "type": "npm",
       "script": "build:dev",
-      "path": "src/Kentico.Xperience.RepoTemplate/Admin/Client",
+      "path": "src/XperienceCommunity.ComponentRegistry.Admin/Client",
       "group": "build",
       "problemMatcher": [],
-      "label": "npm: build:dev - src/Kentico.Xperience.RepoTemplate/Admin/Client",
-      "detail": "webpack --mode=development"
+      "label": "npm: build:dev - src/XperienceCommunity.ComponentRegistry.Admin/Client",
+      "detail": "webpack --mode=development",
+      "dependsOn": [
+        "npm: install - src/XperienceCommunity.ComponentRegistry.Admin/Client"
+      ]
     },
     {
       "type": "npm",
       "script": "start",
-      "path": "src/Kentico.Xperience.RepoTemplate/Admin/Client",
+      "path": "src/XperienceCommunity.ComponentRegistry.Admin/Client",
       "problemMatcher": [],
-      "label": "npm: start - src/Kentico.Xperience.RepoTemplate/Admin/Client",
-      "detail": "webpack serve --mode development"
+      "label": "npm: start - src/XperienceCommunity.ComponentRegistry.Admin/Client",
+      "detail": "webpack serve --mode development",
+      "dependsOn": [
+        "npm: install - src/XperienceCommunity.ComponentRegistry.Admin/Client"
+      ]
     },
     {
       "label": "dotnet: watch DancingGoat",
