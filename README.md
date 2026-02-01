@@ -1,6 +1,6 @@
 # XperienceCommunity.ComponentRegistry
 
-[![CI: Build and Test](https://github.com/Kentico/repo-template/actions/workflows/ci.yml/badge.svg)](https://github.com/Kentico/repo-template/actions/workflows/ci.yml)
+[![CI: Build and Test](https://github.com/seangwright/xperience-community-component-registry/actions/workflows/ci.yml/badge.svg)](https://github.com/seangwright/xperience-community-component-registry/actions/workflows/ci.yml)
 
 ## Description
 
@@ -11,6 +11,17 @@ This project enables administrators to view all registered custom components in 
     <img src="https://raw.githubusercontent.com/seangwright/xperience-community-component-registry/main/images/component-registry-admin-page-builder.jpg"
     width="600" alt="Component registry for Page Builder in Xperience administration">
   </a>
+
+  <a href="https://raw.githubusercontent.com/seangwright/xperience-community-component-registry/main/images/component-registry-admin-email-builder.jpg">
+    <img src="https://raw.githubusercontent.com/seangwright/xperience-community-component-registry/main/images/component-registry-admin-email-builder.jpg"
+    width="600" alt="Component registry for Email Builder in Xperience administration">
+  </a>
+
+  <a href="https://raw.githubusercontent.com/seangwright/xperience-community-component-registry/main/images/component-registry-admin-form-builder.jpg">
+    <img src="https://raw.githubusercontent.com/seangwright/xperience-community-component-registry/main/images/component-registry-admin-form-builder.jpg"
+    width="600" alt="Component registry for Form Builder in Xperience administration">
+  </a>
+
   </div>
 
 ## Requirements
