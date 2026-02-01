@@ -19,40 +19,39 @@ import { ChevronDown, Loader } from 'lucide-react';
 import { usePageCommand } from '@kentico/xperience-admin-base';
 import { ComponentDetailsPanel } from './ComponentDetails';
 import {
-  ComponentDto,
-  ComponentUsageDetailDto,
-  PageTemplateDto,
+  EmailComponentDto,
+  EmailConfigurationUsageDetailDto,
+  EmailTemplateDto,
 } from './ComponentDetails/types';
 
-interface PageBuilderComponentViewerClientProperties {
-  widgets: ComponentDto[];
-  sections: ComponentDto[];
-  pageTemplates: PageTemplateDto[];
+interface EmailBuilderComponentViewerClientProperties {
+  widgets: EmailComponentDto[];
+  sections: EmailComponentDto[];
+  emailTemplates: EmailTemplateDto[];
 }
 
-// Table row component with expandable details
-const ComponentTableRow: React.FC<{
-  component: ComponentDto | PageTemplateDto;
+// Table row component for email builder components with expandable details
+const EmailComponentTableRow: React.FC<{
+  component: EmailComponentDto | EmailTemplateDto;
   componentType: 'widget' | 'section' | 'template';
 }> = ({ component, componentType }) => {
   const [expanded, setExpanded] = useState(false);
-  const [usageData, setUsageData] = useState<ComponentUsageDetailDto | null>(
-    null,
-  );
+  const [usageData, setUsageData] =
+    useState<EmailConfigurationUsageDetailDto | null>(null);
 
   // Use page command hooks for fetching usage data
-  const { execute: getPageBuilderPageTemplateUsage } = usePageCommand<
-    ComponentUsageDetailDto,
+  const { execute: getEmailBuilderWidgetUsage } = usePageCommand<
+    EmailConfigurationUsageDetailDto,
     { componentIdentifier: string }
-  >('GetPageBuilderPageTemplateUsage', {
+  >('GetEmailBuilderWidgetUsage', {
     after: (response) => {
       if (response) setUsageData(response);
     },
   });
-  const { execute: getPageBuilderWidgetUsage } = usePageCommand<
-    ComponentUsageDetailDto,
+  const { execute: getEmailBuilderTemplateUsage } = usePageCommand<
+    EmailConfigurationUsageDetailDto,
     { componentIdentifier: string }
-  >('GetPageBuilderWidgetUsage', {
+  >('GetEmailBuilderTemplateUsage', {
     after: (response) => {
       if (response) setUsageData(response);
     },
@@ -63,9 +62,9 @@ const ComponentTableRow: React.FC<{
       try {
         const params = { componentIdentifier: component.identifier };
         if (componentType === 'template') {
-          await getPageBuilderPageTemplateUsage(params);
+          await getEmailBuilderTemplateUsage(params);
         } else {
-          await getPageBuilderWidgetUsage(params);
+          await getEmailBuilderWidgetUsage(params);
         }
       } catch (error) {
         // eslint-disable-next-line no-console
@@ -135,11 +134,27 @@ const ComponentTableRow: React.FC<{
             <span className="text-slate-400">—</span>
           )}
         </TableCell>
+        {componentType === 'widget' && 'propertiesTypeName' in component && (
+          <TableCell>
+            {component.propertiesTypeName ? (
+              <div
+                className="max-w-xs overflow-x-auto overflow-y-hidden"
+                title={component.propertiesTypeName}
+              >
+                <code className="px-2 py-1 bg-indigo-50 rounded text-xs font-mono text-indigo-700 whitespace-nowrap">
+                  {component.propertiesTypeName}
+                </code>
+              </div>
+            ) : (
+              <span className="text-slate-400">—</span>
+            )}
+          </TableCell>
+        )}
         {isTemplate && (
           <TableCell>
             {component.contentTypeNames.length > 0 ? (
               <div className="flex flex-wrap gap-1">
-                {component.contentTypeNames.map((ct) => (
+                {component.contentTypeNames.map((ct: string) => (
                   <span
                     key={ct}
                     className="inline-block px-2 py-1 bg-indigo-100 text-indigo-700 rounded-full text-xs font-medium"
@@ -157,7 +172,7 @@ const ComponentTableRow: React.FC<{
 
       {expanded && (
         <TableRow>
-          <TableCell colSpan={isTemplate ? 7 : 6} className="p-0">
+          <TableCell colSpan={isTemplate ? 8 : 7} className="p-0">
             <div className="p-4 bg-slate-50 border-t">
               {usageData ? (
                 <ComponentDetailsPanel data={usageData} />
@@ -179,11 +194,11 @@ const ComponentTableRow: React.FC<{
   );
 };
 
-export const PageBuilderComponentViewerTemplate = (
-  props: PageBuilderComponentViewerClientProperties,
+export const EmailBuilderComponentViewerTemplate = (
+  props: EmailBuilderComponentViewerClientProperties,
 ) => {
   const totalComponents =
-    props.widgets.length + props.sections.length + props.pageTemplates.length;
+    props.widgets.length + props.sections.length + props.emailTemplates.length;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-8">
@@ -191,10 +206,11 @@ export const PageBuilderComponentViewerTemplate = (
         {/* Header */}
         <div className="space-y-2">
           <h1 className="text-4xl font-bold tracking-tight !text-slate-900">
-            Component Registry
+            Email Builder Components
           </h1>
           <p className="text-lg !text-slate-600">
-            Browse and explore all registered components in the system
+            Browse and explore all registered email builder components in the
+            system
           </p>
         </div>
 
@@ -242,12 +258,12 @@ export const PageBuilderComponentViewerTemplate = (
           <Card className="bg-gradient-to-br from-orange-50 to-orange-100 border-orange-200">
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium !text-orange-700">
-                Page Templates
+                Email Templates
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold !text-orange-900">
-                {props.pageTemplates.length}
+                {props.emailTemplates.length}
               </div>
             </CardContent>
           </Card>
@@ -269,10 +285,10 @@ export const PageBuilderComponentViewerTemplate = (
               Sections ({props.sections.length})
             </TabsTrigger>
             <TabsTrigger
-              value="pageTemplates"
+              value="emailTemplates"
               className="!text-slate-700 data-[state=active]:!text-slate-900"
             >
-              Templates ({props.pageTemplates.length})
+              Templates ({props.emailTemplates.length})
             </TabsTrigger>
           </TabsList>
 
@@ -280,10 +296,10 @@ export const PageBuilderComponentViewerTemplate = (
             <Card className="shadow-lg">
               <CardHeader className="bg-gradient-to-r from-purple-50 to-blue-50">
                 <CardTitle className="text-2xl !text-slate-900">
-                  Widget Components
+                  Email Widget Components
                 </CardTitle>
                 <CardDescription className="text-base !text-slate-600">
-                  Reusable UI widgets for page building
+                  Reusable widgets for email builder
                 </CardDescription>
               </CardHeader>
               <CardContent className="pt-6">
@@ -308,11 +324,14 @@ export const PageBuilderComponentViewerTemplate = (
                           <TableHead className="font-semibold !text-slate-700">
                             Component Type
                           </TableHead>
+                          <TableHead className="font-semibold !text-slate-700">
+                            Properties Type
+                          </TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
                         {props.widgets.map((widget, _index) => (
-                          <ComponentTableRow
+                          <EmailComponentTableRow
                             key={widget.identifier}
                             component={widget}
                             componentType="widget"
@@ -323,7 +342,7 @@ export const PageBuilderComponentViewerTemplate = (
                   </div>
                 ) : (
                   <div className="text-center py-12 text-slate-500">
-                    <p className="text-lg">No widgets registered</p>
+                    <p className="text-lg">No email widgets registered</p>
                   </div>
                 )}
               </CardContent>
@@ -334,10 +353,10 @@ export const PageBuilderComponentViewerTemplate = (
             <Card className="shadow-lg">
               <CardHeader className="bg-gradient-to-r from-green-50 to-teal-50">
                 <CardTitle className="text-2xl !text-slate-900">
-                  Section Components
+                  Email Section Components
                 </CardTitle>
                 <CardDescription className="text-base !text-slate-600">
-                  Layout sections for structuring page content
+                  Layout sections for structuring email content
                 </CardDescription>
               </CardHeader>
               <CardContent className="pt-6">
@@ -366,7 +385,7 @@ export const PageBuilderComponentViewerTemplate = (
                       </TableHeader>
                       <TableBody>
                         {props.sections.map((section, _index) => (
-                          <ComponentTableRow
+                          <EmailComponentTableRow
                             key={section.identifier}
                             component={section}
                             componentType="section"
@@ -377,25 +396,25 @@ export const PageBuilderComponentViewerTemplate = (
                   </div>
                 ) : (
                   <div className="text-center py-12 text-slate-500">
-                    <p className="text-lg">No sections registered</p>
+                    <p className="text-lg">No email sections registered</p>
                   </div>
                 )}
               </CardContent>
             </Card>
           </TabsContent>
 
-          <TabsContent value="pageTemplates" className="space-y-4">
+          <TabsContent value="emailTemplates" className="space-y-4">
             <Card className="shadow-lg">
               <CardHeader className="bg-gradient-to-r from-orange-50 to-amber-50">
                 <CardTitle className="text-2xl !text-slate-900">
-                  Page Template Components
+                  Email Template Components
                 </CardTitle>
                 <CardDescription className="text-base !text-slate-600">
-                  Complete page layouts for different content types
+                  Complete email templates for different content types
                 </CardDescription>
               </CardHeader>
               <CardContent className="pt-6">
-                {props.pageTemplates.length > 0 ? (
+                {props.emailTemplates.length > 0 ? (
                   <div className="rounded-lg border">
                     <Table>
                       <TableHeader>
@@ -422,8 +441,8 @@ export const PageBuilderComponentViewerTemplate = (
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {props.pageTemplates.map((template, _index) => (
-                          <ComponentTableRow
+                        {props.emailTemplates.map((template, _index) => (
+                          <EmailComponentTableRow
                             key={template.identifier}
                             component={template}
                             componentType="template"
@@ -434,7 +453,7 @@ export const PageBuilderComponentViewerTemplate = (
                   </div>
                 ) : (
                   <div className="text-center py-12 text-slate-500">
-                    <p className="text-lg">No page templates registered</p>
+                    <p className="text-lg">No email templates registered</p>
                   </div>
                 )}
               </CardContent>

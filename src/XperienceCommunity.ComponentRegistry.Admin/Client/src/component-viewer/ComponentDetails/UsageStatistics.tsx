@@ -4,12 +4,14 @@ interface UsageStatisticsProps {
   totalPages: number;
   totalVariants: number;
   lastModified?: Date;
+  label?: string;
 }
 
 export const UsageStatistics: React.FC<UsageStatisticsProps> = ({
   totalPages,
   totalVariants,
   lastModified,
+  label = 'Pages Using Component',
 }) => {
   return (
     <div className="p-4 bg-white border border-slate-200 rounded-lg">
@@ -19,7 +21,7 @@ export const UsageStatistics: React.FC<UsageStatisticsProps> = ({
       <div className="space-y-4">
         <div>
           <div className="text-2xl font-bold text-slate-900">{totalPages}</div>
-          <p className="text-xs text-slate-600">Pages Using Component</p>
+          <p className="text-xs text-slate-600">{label}</p>
         </div>
         <div>
           <div className="text-2xl font-bold text-slate-900">

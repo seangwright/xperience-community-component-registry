@@ -66,22 +66,22 @@ public class PageBuilderComponentViewerPage(
     }
 
     /// <summary>
-    /// Retrieves detailed usage information for a page template component.
+    /// Retrieves detailed usage information for a page builder page template component.
     /// </summary>
-    [PageCommand(CommandName = "GetPageTemplateUsage", Permission = SystemPermissions.VIEW)]
-    public async Task<ICommandResponse> GetPageTemplateUsage(ComponentDetailsParams @params)
+    [PageCommand(CommandName = "GetPageBuilderPageTemplateUsage", Permission = SystemPermissions.VIEW)]
+    public async Task<ICommandResponse> GetPageBuilderPageTemplateUsage(ComponentDetailsParams @params)
     {
-        var usage = await componentUsageService.GetPageTemplateUsageAsync(@params.ComponentIdentifier);
+        var usage = await componentUsageService.GetPageBuilderPageTemplateUsageAsync(@params.ComponentIdentifier);
         return ResponseFrom(usage);
     }
 
     /// <summary>
-    /// Retrieves detailed usage information for a widget component.
+    /// Retrieves detailed usage information for a page builder widget component.
     /// </summary>
-    [PageCommand(CommandName = "GetWidgetUsage", Permission = SystemPermissions.VIEW)]
-    public async Task<ICommandResponse> GetWidgetUsage(ComponentDetailsParams @params)
+    [PageCommand(CommandName = "GetPageBuilderWidgetUsage", Permission = SystemPermissions.VIEW)]
+    public async Task<ICommandResponse> GetPageBuilderWidgetUsage(ComponentDetailsParams @params)
     {
-        var usage = await componentUsageService.GetWidgetUsageAsync(@params.ComponentIdentifier);
+        var usage = await componentUsageService.GetPageBuilderWidgetUsageAsync(@params.ComponentIdentifier);
         return ResponseFrom(usage);
     }
 }

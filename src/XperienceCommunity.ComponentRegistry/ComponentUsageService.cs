@@ -13,18 +13,18 @@ namespace XperienceCommunity.ComponentRegistry;
 public interface IComponentUsageService
 {
     /// <summary>
-    /// Gets detailed usage information for a specific page template.
+    /// Gets detailed usage information for a specific page builder page template.
     /// </summary>
     /// <param name="templateIdentifier">The unique identifier of the page template.</param>
     /// <returns>Component usage details including all pages and language variants.</returns>
-    public Task<ComponentUsageDetailDto> GetPageTemplateUsageAsync(string templateIdentifier);
+    public Task<ComponentUsageDetailDto> GetPageBuilderPageTemplateUsageAsync(string templateIdentifier);
 
     /// <summary>
-    /// Gets detailed usage information for a specific widget.
+    /// Gets detailed usage information for a specific page builder widget.
     /// </summary>
     /// <param name="widgetIdentifier">The unique identifier of the widget.</param>
     /// <returns>Component usage details including all pages and language variants.</returns>
-    public Task<ComponentUsageDetailDto> GetWidgetUsageAsync(string widgetIdentifier);
+    public Task<ComponentUsageDetailDto> GetPageBuilderWidgetUsageAsync(string widgetIdentifier);
 
     /// <summary>
     /// Gets usage information for multiple components in a batch operation.
@@ -33,6 +33,20 @@ public interface IComponentUsageService
     /// <param name="componentType">The type of components being queried ("PageTemplate" or "Widget").</param>
     /// <returns>List of component usage details for each identifier.</returns>
     public Task<List<ComponentUsageDetailDto>> GetBatchUsageAsync(List<string> identifiers, string componentType);
+
+    /// <summary>
+    /// Gets detailed usage information for a specific email builder widget.
+    /// </summary>
+    /// <param name="widgetIdentifier">The unique identifier of the email widget.</param>
+    /// <returns>Email configuration usage details including all email configurations and language variants.</returns>
+    public Task<EmailConfigurationUsageDetailDto> GetEmailBuilderWidgetUsageAsync(string widgetIdentifier);
+
+    /// <summary>
+    /// Gets detailed usage information for a specific email builder template.
+    /// </summary>
+    /// <param name="templateIdentifier">The unique identifier of the email template.</param>
+    /// <returns>Email configuration usage details including all email configurations and language variants.</returns>
+    public Task<EmailConfigurationUsageDetailDto> GetEmailBuilderTemplateUsageAsync(string templateIdentifier);
 }
 
 
@@ -45,13 +59,13 @@ public class ComponentUsageService(ILogger<ComponentUsageService> logger) : ICom
     private readonly ILogger<ComponentUsageService> logger = logger;
 
     /// <inheritdoc/>
-    public Task<ComponentUsageDetailDto> GetPageTemplateUsageAsync(string templateIdentifier) => GetComponentUsage(
+    public Task<ComponentUsageDetailDto> GetPageBuilderPageTemplateUsageAsync(string templateIdentifier) => GetComponentUsage(
             templateIdentifier,
             "PageTemplate",
             "ContentItemCommonDataVisualBuilderTemplateConfiguration");
 
     /// <inheritdoc/>
-    public Task<ComponentUsageDetailDto> GetWidgetUsageAsync(string widgetIdentifier) => GetComponentUsage(
+    public Task<ComponentUsageDetailDto> GetPageBuilderWidgetUsageAsync(string widgetIdentifier) => GetComponentUsage(
             widgetIdentifier,
             "Widget",
             "ContentItemCommonDataVisualBuilderWidgets");
@@ -66,14 +80,26 @@ public class ComponentUsageService(ILogger<ComponentUsageService> logger) : ICom
         foreach (string identifier in identifiers)
         {
             var usage = componentType.Equals("PageTemplate", StringComparison.InvariantCultureIgnoreCase)
-                ? await GetPageTemplateUsageAsync(identifier)
-                : await GetWidgetUsageAsync(identifier);
+                ? await GetPageBuilderPageTemplateUsageAsync(identifier)
+                : await GetPageBuilderWidgetUsageAsync(identifier);
 
             results.Add(usage);
         }
 
         return results;
     }
+
+    /// <inheritdoc/>
+    public Task<EmailConfigurationUsageDetailDto> GetEmailBuilderWidgetUsageAsync(string widgetIdentifier) => GetEmailComponentUsage(
+            widgetIdentifier,
+            "EmailWidget",
+            "ContentItemCommonDataVisualBuilderWidgets");
+
+    /// <inheritdoc/>
+    public Task<EmailConfigurationUsageDetailDto> GetEmailBuilderTemplateUsageAsync(string templateIdentifier) => GetEmailComponentUsage(
+            templateIdentifier,
+            "EmailTemplate",
+            "ContentItemCommonDataVisualBuilderTemplateConfiguration");
 
     /// <summary>
     /// Retrieves component usage by querying the database.
@@ -202,6 +228,133 @@ public class ComponentUsageService(ILogger<ComponentUsageService> logger) : ICom
     }
 
     /// <summary>
+    /// Retrieves email component usage by querying the database.
+    /// </summary>
+    private async Task<EmailConfigurationUsageDetailDto> GetEmailComponentUsage(
+        string componentIdentifier,
+        string componentType,
+        string configColumnName,
+        CancellationToken cancellationToken = default)
+    {
+        var result = new EmailConfigurationUsageDetailDto
+        {
+            ComponentIdentifier = componentIdentifier,
+            ComponentType = componentType,
+            EmailConfigurations = []
+        };
+
+        try
+        {
+            string query = @"
+                SELECT
+                    EC.EmailConfigurationID,
+                    EC.EmailConfigurationEmailChannelID,
+                    EC.EmailConfigurationName,
+                    EC.EmailConfigurationPurpose,
+                    C.ChannelDisplayName,
+                    CI.ContentItemID,
+                    CL.ContentLanguageID,
+                    CL.ContentLanguageName,
+                    CICD.ContentItemCommonDataID,
+                    CICD.ContentItemCommonDataVersionStatus,
+                    CICD.ContentItemCommonDataLastPublishedWhen,
+                    CICD.[{configColumnName}]
+                FROM EmailLibrary_EmailConfiguration EC
+                INNER JOIN CMS_ContentItem CI ON EC.EmailConfigurationContentItemID = CI.ContentItemID
+                INNER JOIN CMS_ContentItemCommonData CICD ON CI.ContentItemID = CICD.ContentItemCommonDataContentItemID
+                INNER JOIN CMS_ContentLanguage CL ON CICD.ContentItemCommonDataContentLanguageID = CL.ContentLanguageID
+                INNER JOIN CMS_Channel C ON CI.ContentItemChannelID = C.ChannelID
+                WHERE CICD.[{configColumnName}] LIKE @componentId ESCAPE '\'
+                ORDER BY EC.EmailConfigurationName, CL.ContentLanguageName";
+
+            query = query.Replace("{configColumnName}", configColumnName);
+
+            var dataParameters = new QueryDataParameters
+            {
+                { "@componentId", $"%{EscapeForLike(componentIdentifier)}%" }
+            };
+            var parameters = new QueryParameters(query, dataParameters, QueryTypeEnum.SQLQuery);
+
+            using (var connection = ConnectionHelper.GetConnection())
+            {
+                var reader = await connection.ExecuteReaderAsync(parameters, CommandBehavior.Default, cancellationToken);
+                if (reader is null)
+                {
+                    return result;
+                }
+
+                var configsByItem = new Dictionary<int, EmailConfigurationUsageDto>();
+                DateTime? lastModified = null;
+
+                while (await reader.ReadAsync(cancellationToken))
+                {
+                    int emailConfigurationId = reader.GetInt32(reader.GetOrdinal("EmailConfigurationID"));
+                    string configurationName = reader.GetString(reader.GetOrdinal("EmailConfigurationName"));
+                    string configurationPurpose = reader.GetString(reader.GetOrdinal("EmailConfigurationPurpose"));
+                    string channelDisplayName = reader.GetString(reader.GetOrdinal("ChannelDisplayName"));
+                    int contentItemId = reader.GetInt32(reader.GetOrdinal("ContentItemID"));
+                    string languageName = reader.GetString(reader.GetOrdinal("ContentLanguageName"));
+                    int commonDataId = reader.GetInt32(reader.GetOrdinal("ContentItemCommonDataID"));
+                    int versionStatusOrdinal = reader.GetOrdinal("ContentItemCommonDataVersionStatus");
+                    int versionStatus = !await reader.IsDBNullAsync(versionStatusOrdinal, cancellationToken)
+                        ? reader.GetInt32(versionStatusOrdinal)
+                        : 0;
+                    int modifiedWhenOrdinal = reader.GetOrdinal("ContentItemCommonDataLastPublishedWhen");
+                    var modifiedWhen = !await reader.IsDBNullAsync(modifiedWhenOrdinal, cancellationToken)
+                        ? reader.GetDateTime(modifiedWhenOrdinal)
+                        : DateTime.UtcNow;
+                    int configColumnOrdinal = reader.GetOrdinal(configColumnName);
+                    string configJson = !await reader.IsDBNullAsync(configColumnOrdinal, cancellationToken)
+                        ? reader.GetString(configColumnOrdinal)
+                        : string.Empty;
+
+                    if (lastModified == null || modifiedWhen > lastModified)
+                    {
+                        lastModified = modifiedWhen;
+                    }
+
+                    if (!configsByItem.TryGetValue(emailConfigurationId, out var configUsage))
+                    {
+                        configUsage = new EmailConfigurationUsageDto
+                        {
+                            EmailConfigurationId = emailConfigurationId,
+                            ContentItemId = contentItemId,
+                            ConfigurationName = configurationName,
+                            ConfigurationPurpose = configurationPurpose,
+                            ChannelDisplayName = channelDisplayName,
+                            CreatedAt = DateTime.UtcNow,
+                            Variants = []
+                        };
+                        configsByItem[emailConfigurationId] = configUsage;
+                    }
+
+                    configUsage.Variants.Add(new EmailConfigurationVariantDto
+                    {
+                        ContentItemCommonDataId = commonDataId,
+                        LanguageName = languageName,
+                        LastModified = modifiedWhen,
+                        ConfigurationJson = configJson,
+                        ConfigurationType = componentType,
+                        IsPublished = versionStatus == (int)VersionStatus.Published
+                    });
+                }
+
+                result.EmailConfigurations = configsByItem.Values.OrderBy(c => c.ConfigurationName).ToList();
+                result.TotalEmailConfigurationsUsing = result.EmailConfigurations.Count;
+                result.TotalVariants = result.EmailConfigurations.SelectMany(c => c.Variants).Count();
+                result.LastModified = lastModified;
+            }
+
+            return result;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error retrieving email component usage for {ComponentIdentifier}", componentIdentifier);
+            return result;
+        }
+    }
+
+    /// <summary>
     /// Escapes special characters for SQL LIKE clause.
     /// </summary>
     private static string EscapeForLike(string value) => value
@@ -321,6 +474,129 @@ public class PageVariantDto
 
     /// <summary>
     /// The type of configuration ("PageTemplate" or "Widget").
+    /// </summary>
+    public string ConfigurationType { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Whether this language variant is published.
+    /// </summary>
+    public bool IsPublished { get; set; }
+}
+
+/// <summary>
+/// Represents a language variant of a page's component configuration.
+/// </summary>
+/// <summary>
+/// Represents detailed usage information for a specific email builder component across the system.
+/// </summary>
+public class EmailConfigurationUsageDetailDto
+{
+    /// <summary>
+    /// The unique identifier of the component.
+    /// </summary>
+    public string ComponentIdentifier { get; set; } = string.Empty;
+
+    /// <summary>
+    /// The type of component ("EmailWidget" or "EmailTemplate").
+    /// </summary>
+    public string ComponentType { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Total number of email configurations using this component.
+    /// </summary>
+    public int TotalEmailConfigurationsUsing { get; set; }
+
+    /// <summary>
+    /// Total number of language variants across all email configurations using this component.
+    /// </summary>
+    public int TotalVariants { get; set; }
+
+    /// <summary>
+    /// The date when this component was last used or modified.
+    /// </summary>
+    public DateTime? LastModified { get; set; }
+
+    /// <summary>
+    /// List of email configurations using this component with their language variants.
+    /// </summary>
+    public List<EmailConfigurationUsageDto> EmailConfigurations { get; set; } = [];
+}
+
+/// <summary>
+/// Represents an email configuration that uses a specific component.
+/// </summary>
+public class EmailConfigurationUsageDto
+{
+    /// <summary>
+    /// The ID of the email configuration.
+    /// </summary>
+    public int EmailConfigurationId { get; set; }
+
+    /// <summary>
+    /// The ID of the content item.
+    /// </summary>
+    public int ContentItemId { get; set; }
+
+    /// <summary>
+    /// The name of the email configuration.
+    /// </summary>
+    public string ConfigurationName { get; set; } = string.Empty;
+
+    /// <summary>
+    /// The purpose of the email configuration.
+    /// </summary>
+    public string ConfigurationPurpose { get; set; } = string.Empty;
+
+    /// <summary>
+    /// The display name of the channel this email configuration belongs to.
+    /// </summary>
+    public string ChannelDisplayName { get; set; } = string.Empty;
+
+    /// <summary>
+    /// The date when the email configuration was created.
+    /// </summary>
+    public DateTime CreatedAt { get; set; }
+
+    /// <summary>
+    /// The date when the email configuration was last modified.
+    /// </summary>
+    public DateTime? ModifiedAt { get; set; }
+
+    /// <summary>
+    /// The language variants of this email configuration containing component configuration.
+    /// </summary>
+    public List<EmailConfigurationVariantDto> Variants { get; set; } = [];
+}
+
+/// <summary>
+/// Represents a language variant of an email configuration's component configuration.
+/// </summary>
+public class EmailConfigurationVariantDto
+{
+    /// <summary>
+    /// The ID of the content item common data.
+    /// </summary>
+    public int ContentItemCommonDataId { get; set; }
+
+    /// <summary>
+    /// The display name of the language (e.g., "English (United States)").
+    /// </summary>
+    public string LanguageName { get; set; } = string.Empty;
+
+    /// <summary>
+    /// The date when this variant was last modified.
+    /// </summary>
+    public DateTime? LastModified { get; set; }
+
+    /// <summary>
+    /// The JSON configuration for the component in this language variant.
+    /// For email templates: ContentItemCommonDataVisualBuilderTemplateConfiguration
+    /// For email widgets: ContentItemCommonDataVisualBuilderWidgets
+    /// </summary>
+    public string ConfigurationJson { get; set; } = string.Empty;
+
+    /// <summary>
+    /// The type of configuration ("EmailWidget" or "EmailTemplate").
     /// </summary>
     public string ConfigurationType { get; set; } = string.Empty;
 

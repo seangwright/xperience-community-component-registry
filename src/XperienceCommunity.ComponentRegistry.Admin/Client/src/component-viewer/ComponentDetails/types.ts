@@ -44,3 +44,49 @@ export interface PageTemplateDto {
   markedTypeName?: string;
   contentTypeNames: string[];
 }
+export interface EmailComponentDto {
+  identifier: string;
+  name: string;
+  description?: string;
+  iconClass?: string;
+  markedTypeName?: string;
+  propertiesTypeName?: string;
+}
+
+export interface EmailTemplateDto {
+  identifier: string;
+  name: string;
+  description?: string;
+  iconClass?: string;
+  markedTypeName?: string;
+  contentTypeNames: string[];
+}
+
+export interface EmailConfigurationVariantDto {
+  contentItemCommonDataId: number;
+  languageName: string;
+  lastModified?: string;
+  configurationJson: string;
+  configurationType: string;
+  isPublished?: boolean;
+}
+
+export interface EmailConfigurationUsageDto {
+  emailConfigurationId: number;
+  contentItemId: number;
+  configurationName: string;
+  configurationPurpose: string;
+  channelDisplayName: string;
+  createdAt: string;
+  modifiedAt?: string;
+  variants: EmailConfigurationVariantDto[];
+}
+
+export interface EmailConfigurationUsageDetailDto {
+  componentIdentifier: string;
+  componentType: string;
+  totalEmailConfigurationsUsing: number;
+  totalVariants: number;
+  lastModified?: string;
+  emailConfigurations: EmailConfigurationUsageDto[];
+}

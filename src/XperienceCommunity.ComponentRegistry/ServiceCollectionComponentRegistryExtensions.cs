@@ -2,6 +2,9 @@ using System.Reflection;
 
 using Microsoft.Extensions.DependencyInjection;
 
+using RegisterEmailSectionAttribute = Kentico.EmailBuilder.Web.Mvc.RegisterEmailSectionAttribute;
+using RegisterEmailTemplateAttribute = Kentico.EmailBuilder.Web.Mvc.RegisterEmailTemplateAttribute;
+using RegisterEmailWidgetAttribute = Kentico.EmailBuilder.Web.Mvc.RegisterEmailWidgetAttribute;
 using RegisterPageTemplateAttribute = Kentico.PageBuilder.Web.Mvc.PageTemplates.RegisterPageTemplateAttribute;
 using RegisterSectionAttribute = Kentico.PageBuilder.Web.Mvc.RegisterSectionAttribute;
 using RegisterWidgetAttribute = Kentico.PageBuilder.Web.Mvc.RegisterWidgetAttribute;
@@ -69,10 +72,60 @@ public static class ServiceCollectionComponentRegistryExtensions
                 contentTypeNames: attr.ContentTypeNames);
             templateStore.Add(definition);
         }
+        var emailWidgetStore = new ComponentDefinitionStore<EmailBuilderWidgetDefinition>();
+        var emailWidgetAttrs = assembliesToScan
+            .SelectMany(a => a.GetCustomAttributes(typeof(RegisterEmailWidgetAttribute), inherit: false))
+            .Cast<RegisterEmailWidgetAttribute>();
+
+        foreach (var attr in emailWidgetAttrs)
+        {
+            var definition = new EmailBuilderWidgetDefinition(
+                identifier: attr.Identifier,
+                name: attr.Name,
+                markedType: attr.MarkedType,
+                description: attr.Description,
+                iconClass: attr.IconClass,
+                propertiesType: attr.PropertiesType);
+            emailWidgetStore.Add(definition);
+        }
+        var emailSectionStore = new ComponentDefinitionStore<EmailBuilderSectionDefinition>();
+        var emailSectionAttrs = assembliesToScan
+            .SelectMany(a => a.GetCustomAttributes(typeof(RegisterEmailSectionAttribute), inherit: false))
+            .Cast<RegisterEmailSectionAttribute>();
+
+        foreach (var attr in emailSectionAttrs)
+        {
+            var definition = new EmailBuilderSectionDefinition(
+                identifier: attr.Identifier,
+                name: attr.Name,
+                markedType: attr.MarkedType,
+                description: attr.Description,
+                iconClass: attr.IconClass);
+            emailSectionStore.Add(definition);
+        }
+        var emailTemplateStore = new ComponentDefinitionStore<EmailBuilderTemplateDefinition>();
+        var emailTemplateAttrs = assembliesToScan
+            .SelectMany(a => a.GetCustomAttributes(typeof(RegisterEmailTemplateAttribute), inherit: false))
+            .Cast<RegisterEmailTemplateAttribute>();
+
+        foreach (var attr in emailTemplateAttrs)
+        {
+            var definition = new EmailBuilderTemplateDefinition(
+                identifier: attr.Identifier,
+                name: attr.Name,
+                markedType: attr.MarkedType,
+                description: attr.Description,
+                iconClass: attr.IconClass,
+                contentTypeNames: attr.ContentTypeNames);
+            emailTemplateStore.Add(definition);
+        }
         _ = services
             .AddSingleton<IComponentDefinitionStore<PageBuilderWidgetDefinition>>(widgetStore)
             .AddSingleton<IComponentDefinitionStore<PageBuilderSectionDefinition>>(sectionStore)
             .AddSingleton<IComponentDefinitionStore<PageBuilderPageTemplateDefinition>>(templateStore)
+            .AddSingleton<IComponentDefinitionStore<EmailBuilderWidgetDefinition>>(emailWidgetStore)
+            .AddSingleton<IComponentDefinitionStore<EmailBuilderSectionDefinition>>(emailSectionStore)
+            .AddSingleton<IComponentDefinitionStore<EmailBuilderTemplateDefinition>>(emailTemplateStore)
             .AddScoped<IComponentUsageService, ComponentUsageService>();
 
         return services;
