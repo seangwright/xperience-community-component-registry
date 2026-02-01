@@ -39,141 +39,166 @@ public static class ServiceCollectionComponentRegistryExtensions
     /// <returns>Service collection for chaining</returns>
     public static IServiceCollection AddComponentRegistry(this IServiceCollection services, IEnumerable<Assembly> assembliesToScan)
     {
-        var widgetStore = new ComponentDefinitionStore<PageBuilderWidgetDefinition>();
-        var widgetAttrs = assembliesToScan
-            .SelectMany(a => a.GetCustomAttributes(typeof(RegisterWidgetAttribute), inherit: false))
-            .Cast<RegisterWidgetAttribute>();
+        var assemblies = assembliesToScan.ToList();
 
-        foreach (var attr in widgetAttrs)
+        services.AddSingleton<IComponentDefinitionStore<PageBuilderWidgetDefinition>>(_ =>
         {
-            var definition = new PageBuilderWidgetDefinition(
-                identifier: attr.Identifier,
-                name: attr.Name,
-                markedType: attr.MarkedType,
-                description: attr.Description,
-                iconClass: attr.IconClass,
-                allowCache: attr.AllowCache);
-            widgetStore.Add(definition);
-        }
-        var sectionStore = new ComponentDefinitionStore<PageBuilderSectionDefinition>();
-        var sectionAttrs = assembliesToScan
-            .SelectMany(a => a.GetCustomAttributes(typeof(RegisterSectionAttribute), inherit: false))
-            .Cast<RegisterSectionAttribute>();
+            var store = new ComponentDefinitionStore<PageBuilderWidgetDefinition>();
+            var attrs = assemblies
+                .SelectMany(a => a.GetCustomAttributes(typeof(RegisterWidgetAttribute), inherit: false))
+                .Cast<RegisterWidgetAttribute>();
 
-        foreach (var attr in sectionAttrs)
-        {
-            var definition = new PageBuilderSectionDefinition(
-                identifier: attr.Identifier,
-                name: attr.Name,
-                markedType: attr.MarkedType,
-                description: attr.Description,
-                iconClass: attr.IconClass);
-            sectionStore.Add(definition);
-        }
-        var templateStore = new ComponentDefinitionStore<PageBuilderPageTemplateDefinition>();
-        var templateAttrs = assembliesToScan
-            .SelectMany(a => a.GetCustomAttributes(typeof(RegisterPageTemplateAttribute), inherit: false))
-            .Cast<RegisterPageTemplateAttribute>();
+            foreach (var attr in attrs)
+            {
+                store.Add(new PageBuilderWidgetDefinition(
+                    identifier: attr.Identifier,
+                    name: attr.Name,
+                    markedType: attr.MarkedType,
+                    description: attr.Description,
+                    iconClass: attr.IconClass,
+                    allowCache: attr.AllowCache));
+            }
+            return store;
+        });
 
-        foreach (var attr in templateAttrs)
+        services.AddSingleton<IComponentDefinitionStore<PageBuilderSectionDefinition>>(_ =>
         {
-            var definition = new PageBuilderPageTemplateDefinition(
-                identifier: attr.Identifier,
-                name: attr.Name,
-                markedType: attr.MarkedType,
-                description: attr.Description,
-                iconClass: attr.IconClass,
-                contentTypeNames: attr.ContentTypeNames);
-            templateStore.Add(definition);
-        }
-        var emailWidgetStore = new ComponentDefinitionStore<EmailBuilderWidgetDefinition>();
-        var emailWidgetAttrs = assembliesToScan
-            .SelectMany(a => a.GetCustomAttributes(typeof(RegisterEmailWidgetAttribute), inherit: false))
-            .Cast<RegisterEmailWidgetAttribute>();
+            var store = new ComponentDefinitionStore<PageBuilderSectionDefinition>();
+            var attrs = assemblies
+                .SelectMany(a => a.GetCustomAttributes(typeof(RegisterSectionAttribute), inherit: false))
+                .Cast<RegisterSectionAttribute>();
 
-        foreach (var attr in emailWidgetAttrs)
-        {
-            var definition = new EmailBuilderWidgetDefinition(
-                identifier: attr.Identifier,
-                name: attr.Name,
-                markedType: attr.MarkedType,
-                description: attr.Description,
-                iconClass: attr.IconClass,
-                propertiesType: attr.PropertiesType);
-            emailWidgetStore.Add(definition);
-        }
-        var emailSectionStore = new ComponentDefinitionStore<EmailBuilderSectionDefinition>();
-        var emailSectionAttrs = assembliesToScan
-            .SelectMany(a => a.GetCustomAttributes(typeof(RegisterEmailSectionAttribute), inherit: false))
-            .Cast<RegisterEmailSectionAttribute>();
+            foreach (var attr in attrs)
+            {
+                store.Add(new PageBuilderSectionDefinition(
+                    identifier: attr.Identifier,
+                    name: attr.Name,
+                    markedType: attr.MarkedType,
+                    description: attr.Description,
+                    iconClass: attr.IconClass));
+            }
+            return store;
+        });
 
-        foreach (var attr in emailSectionAttrs)
+        services.AddSingleton<IComponentDefinitionStore<PageBuilderPageTemplateDefinition>>(_ =>
         {
-            var definition = new EmailBuilderSectionDefinition(
-                identifier: attr.Identifier,
-                name: attr.Name,
-                markedType: attr.MarkedType,
-                description: attr.Description,
-                iconClass: attr.IconClass);
-            emailSectionStore.Add(definition);
-        }
-        var emailTemplateStore = new ComponentDefinitionStore<EmailBuilderTemplateDefinition>();
-        var emailTemplateAttrs = assembliesToScan
-            .SelectMany(a => a.GetCustomAttributes(typeof(RegisterEmailTemplateAttribute), inherit: false))
-            .Cast<RegisterEmailTemplateAttribute>();
+            var store = new ComponentDefinitionStore<PageBuilderPageTemplateDefinition>();
+            var attrs = assemblies
+                .SelectMany(a => a.GetCustomAttributes(typeof(RegisterPageTemplateAttribute), inherit: false))
+                .Cast<RegisterPageTemplateAttribute>();
 
-        foreach (var attr in emailTemplateAttrs)
-        {
-            var definition = new EmailBuilderTemplateDefinition(
-                identifier: attr.Identifier,
-                name: attr.Name,
-                markedType: attr.MarkedType,
-                description: attr.Description,
-                iconClass: attr.IconClass,
-                contentTypeNames: attr.ContentTypeNames);
-            emailTemplateStore.Add(definition);
-        }
-        var formComponentStore = new ComponentDefinitionStore<FormBuilderComponentDefinition>();
-        var formComponentAttrs = assembliesToScan
-            .SelectMany(a => a.GetCustomAttributes(typeof(RegisterFormComponentAttribute), inherit: false))
-            .Cast<RegisterFormComponentAttribute>()
-            .Where(attr => attr.IsAvailableInFormBuilderEditor);
+            foreach (var attr in attrs)
+            {
+                store.Add(new PageBuilderPageTemplateDefinition(
+                    identifier: attr.Identifier,
+                    name: attr.Name,
+                    markedType: attr.MarkedType,
+                    description: attr.Description,
+                    iconClass: attr.IconClass,
+                    contentTypeNames: attr.ContentTypeNames));
+            }
+            return store;
+        });
 
-        foreach (var attr in formComponentAttrs)
+        services.AddSingleton<IComponentDefinitionStore<EmailBuilderWidgetDefinition>>(_ =>
         {
-            var definition = new FormBuilderComponentDefinition(
-                identifier: attr.Identifier,
-                name: attr.Name,
-                markedType: attr.MarkedType,
-                description: attr.Description,
-                iconClass: attr.IconClass);
-            formComponentStore.Add(definition);
-        }
-        var formSectionStore = new ComponentDefinitionStore<FormBuilderSectionDefinition>();
-        var formSectionAttrs = assembliesToScan
-            .SelectMany(a => a.GetCustomAttributes(typeof(RegisterFormSectionAttribute), inherit: false))
-            .Cast<RegisterFormSectionAttribute>();
+            var store = new ComponentDefinitionStore<EmailBuilderWidgetDefinition>();
+            var attrs = assemblies
+                .SelectMany(a => a.GetCustomAttributes(typeof(RegisterEmailWidgetAttribute), inherit: false))
+                .Cast<RegisterEmailWidgetAttribute>();
 
-        foreach (var attr in formSectionAttrs)
+            foreach (var attr in attrs)
+            {
+                store.Add(new EmailBuilderWidgetDefinition(
+                    identifier: attr.Identifier,
+                    name: attr.Name,
+                    markedType: attr.MarkedType,
+                    description: attr.Description,
+                    iconClass: attr.IconClass,
+                    propertiesType: attr.PropertiesType));
+            }
+            return store;
+        });
+
+        services.AddSingleton<IComponentDefinitionStore<EmailBuilderSectionDefinition>>(_ =>
         {
-            var definition = new FormBuilderSectionDefinition(
-                identifier: attr.Identifier,
-                name: attr.Name,
-                markedType: attr.MarkedType,
-                description: attr.Description,
-                iconClass: attr.IconClass);
-            formSectionStore.Add(definition);
-        }
-        _ = services
-            .AddSingleton<IComponentDefinitionStore<PageBuilderWidgetDefinition>>(widgetStore)
-            .AddSingleton<IComponentDefinitionStore<PageBuilderSectionDefinition>>(sectionStore)
-            .AddSingleton<IComponentDefinitionStore<PageBuilderPageTemplateDefinition>>(templateStore)
-            .AddSingleton<IComponentDefinitionStore<EmailBuilderWidgetDefinition>>(emailWidgetStore)
-            .AddSingleton<IComponentDefinitionStore<EmailBuilderSectionDefinition>>(emailSectionStore)
-            .AddSingleton<IComponentDefinitionStore<EmailBuilderTemplateDefinition>>(emailTemplateStore)
-            .AddSingleton<IComponentDefinitionStore<FormBuilderComponentDefinition>>(formComponentStore)
-            .AddSingleton<IComponentDefinitionStore<FormBuilderSectionDefinition>>(formSectionStore)
-            .AddScoped<IComponentUsageService, ComponentUsageService>();
+            var store = new ComponentDefinitionStore<EmailBuilderSectionDefinition>();
+            var attrs = assemblies
+                .SelectMany(a => a.GetCustomAttributes(typeof(RegisterEmailSectionAttribute), inherit: false))
+                .Cast<RegisterEmailSectionAttribute>();
+
+            foreach (var attr in attrs)
+            {
+                store.Add(new EmailBuilderSectionDefinition(
+                    identifier: attr.Identifier,
+                    name: attr.Name,
+                    markedType: attr.MarkedType,
+                    description: attr.Description,
+                    iconClass: attr.IconClass));
+            }
+            return store;
+        });
+
+        services.AddSingleton<IComponentDefinitionStore<EmailBuilderTemplateDefinition>>(_ =>
+        {
+            var store = new ComponentDefinitionStore<EmailBuilderTemplateDefinition>();
+            var attrs = assemblies
+                .SelectMany(a => a.GetCustomAttributes(typeof(RegisterEmailTemplateAttribute), inherit: false))
+                .Cast<RegisterEmailTemplateAttribute>();
+
+            foreach (var attr in attrs)
+            {
+                store.Add(new EmailBuilderTemplateDefinition(
+                    identifier: attr.Identifier,
+                    name: attr.Name,
+                    markedType: attr.MarkedType,
+                    description: attr.Description,
+                    iconClass: attr.IconClass,
+                    contentTypeNames: attr.ContentTypeNames));
+            }
+            return store;
+        });
+
+        services.AddSingleton<IComponentDefinitionStore<FormBuilderComponentDefinition>>(_ =>
+        {
+            var store = new ComponentDefinitionStore<FormBuilderComponentDefinition>();
+            var attrs = assemblies
+                .SelectMany(a => a.GetCustomAttributes(typeof(RegisterFormComponentAttribute), inherit: false))
+                .Cast<RegisterFormComponentAttribute>()
+                .Where(attr => attr.IsAvailableInFormBuilderEditor);
+
+            foreach (var attr in attrs)
+            {
+                store.Add(new FormBuilderComponentDefinition(
+                    identifier: attr.Identifier,
+                    name: attr.Name,
+                    markedType: attr.MarkedType,
+                    description: attr.Description,
+                    iconClass: attr.IconClass));
+            }
+            return store;
+        });
+
+        services.AddSingleton<IComponentDefinitionStore<FormBuilderSectionDefinition>>(_ =>
+        {
+            var store = new ComponentDefinitionStore<FormBuilderSectionDefinition>();
+            var attrs = assemblies
+                .SelectMany(a => a.GetCustomAttributes(typeof(RegisterFormSectionAttribute), inherit: false))
+                .Cast<RegisterFormSectionAttribute>();
+
+            foreach (var attr in attrs)
+            {
+                store.Add(new FormBuilderSectionDefinition(
+                    identifier: attr.Identifier,
+                    name: attr.Name,
+                    markedType: attr.MarkedType,
+                    description: attr.Description,
+                    iconClass: attr.IconClass));
+            }
+            return store;
+        });
+
+        services.AddScoped<IComponentUsageService, ComponentUsageService>();
 
         return services;
     }
