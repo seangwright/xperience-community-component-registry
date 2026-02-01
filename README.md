@@ -36,7 +36,7 @@ This project enables administrators to view all registered custom components in 
 
 | Xperience Version | Library Version |
 | ----------------- | --------------- |
-| >= 31.1.0         | 1.0.0           |
+| >= 31.1.0         | 1.0.1           |
 
 ### Dependencies
 
