@@ -31,20 +31,12 @@ public class PageBuilderComponentViewerPage(
         PageBuilderComponentViewerPageClientProperties properties)
     {
         var widgets = widgetStore.GetAll()
-            .Select(w =>
-            {
-                string gs = localizer.GetString(w.Name);
-                string ls = localizer.LocalizeString(w.Name);
-                string gs2 = localizer.GetString(w.Description);
-                string ls2 = localizer.LocalizeString(w.Description);
-
-                return new ComponentDto(
+            .Select(w => new ComponentDto(
                 w.Identifier,
                 localizer.LocalizeString(w.Name),
                 localizer.LocalizeString(w.Description),
                 w.IconClass,
-                w.MarkedType?.FullName);
-            })
+                w.MarkedType?.FullName))
             .ToList();
 
         var sections = sectionStore.GetAll()
