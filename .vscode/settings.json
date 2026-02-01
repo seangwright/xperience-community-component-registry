@@ -31,7 +31,7 @@
     "editor.defaultFormatter": "ms-dotnettools.csharp"
   },
 
-  "dotnet.defaultSolution": "XperienceCommunity.ComponentRegistry.sln",
+  "dotnet.defaultSolution": "XperienceCommunity.ComponentRegistry.slnx",
 
   "eslint.workingDirectories": [
     "./src/XperienceCommunity.ComponentRegistry/Admin/Client"
