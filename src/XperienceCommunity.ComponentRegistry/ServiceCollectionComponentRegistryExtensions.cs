@@ -15,16 +15,28 @@ namespace XperienceCommunity.ComponentRegistry;
 
 public static class ServiceCollectionComponentRegistryExtensions
 {
+    /// <summary>
+    /// Registers component registry services by scanning assemblies marked with <see cref="CMS.AssemblyDiscoverableAttribute"/> and the entry assembly
+    /// </summary>
+    /// <param name="services">Service collection</param>
+    /// <returns>Service collection for chaining</returns>
     public static IServiceCollection AddComponentRegistry(this IServiceCollection services)
     {
         var assemblies = AppDomain.CurrentDomain
             .GetAssemblies()
             .Where(a => a.GetCustomAttributes(typeof(CMS.AssemblyDiscoverableAttribute), inherit: false).Length > 0)
+            .Concat(Assembly.GetEntryAssembly() is { } entry ? [entry] : [])
             .ToList();
 
         return AddComponentRegistry(services, assemblies);
     }
 
+    /// <summary>
+    /// Registers component registry services by scanning specified assemblies for Page Builder, Email Builder, and Form Builder components
+    /// </summary>
+    /// <param name="services">Service collection</param>
+    /// <param name="assembliesToScan">Assemblies to scan for component registrations</param>
+    /// <returns>Service collection for chaining</returns>
     public static IServiceCollection AddComponentRegistry(this IServiceCollection services, IEnumerable<Assembly> assembliesToScan)
     {
         var widgetStore = new ComponentDefinitionStore<PageBuilderWidgetDefinition>();
