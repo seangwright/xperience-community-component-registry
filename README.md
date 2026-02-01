@@ -6,6 +6,13 @@
 
 This project enables administrators to view all registered custom components in an Xperience by Kentico application, like Page Builder widgets, and explore which channels and web pages use those components all through a friendly user interface in the Xperience administration.
 
+<div style="display: flex; gap: 1rem; flex-wrap: wrap">
+  <a href="https://raw.githubusercontent.com/seangwright/xperience-community-component-registry/main/images/component-registry-admin-page-builder.jpg">
+    <img src="https://raw.githubusercontent.com/seangwright/xperience-community-component-registry/main/images/component-registry-admin-page-builder.jpg"
+    width="600" alt="Component registry for Page Builder in Xperience administration">
+  </a>
+  </div>
+
 ## Requirements
 
 ### Library Version Matrix
