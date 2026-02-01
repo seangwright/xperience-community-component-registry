@@ -1,5 +1,11 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
+  <PropertyGroup>
+    <Product>Xperience Community Component Registry services</Product>
+    <Title>$(Product)</Title>
+    <Description>Adds services for Xperience Community Component Registry.</Description>
+  </PropertyGroup>
+
   <ItemGroup>
     <AssemblyAttribute Include="CMS.AssemblyDiscoverableAttribute"></AssemblyAttribute>
   </ItemGroup>

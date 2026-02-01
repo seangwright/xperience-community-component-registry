@@ -1,11 +1,10 @@
 <Project>
 
   <PropertyGroup>
-    <Company>Kentico Software</Company>
-    <Authors>$(Company)</Authors>
-    <Copyright>Copyright © $(Company) $([System.DateTime]::Now.Year)</Copyright>
-    <Trademark>$(Company)™</Trademark>
-    <VersionPrefix>1.0.0</VersionPrefix>
+    <Authors>Sean G. Wright</Authors>
+    <Copyright>Copyright © $(Author) $([System.DateTime]::Now.Year)</Copyright>
+    <Trademark>$(Author)™</Trademark>
+    <VersionPrefix>1.0.1</VersionPrefix>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
 
     <PackageProjectUrl>https://github.com/seangwright/xperience-community-component-registry</PackageProjectUrl>
