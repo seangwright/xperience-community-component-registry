@@ -5,6 +5,8 @@ using Microsoft.Extensions.DependencyInjection;
 using RegisterEmailSectionAttribute = Kentico.EmailBuilder.Web.Mvc.RegisterEmailSectionAttribute;
 using RegisterEmailTemplateAttribute = Kentico.EmailBuilder.Web.Mvc.RegisterEmailTemplateAttribute;
 using RegisterEmailWidgetAttribute = Kentico.EmailBuilder.Web.Mvc.RegisterEmailWidgetAttribute;
+using RegisterFormComponentAttribute = Kentico.Forms.Web.Mvc.RegisterFormComponentAttribute;
+using RegisterFormSectionAttribute = Kentico.Forms.Web.Mvc.RegisterFormSectionAttribute;
 using RegisterPageTemplateAttribute = Kentico.PageBuilder.Web.Mvc.PageTemplates.RegisterPageTemplateAttribute;
 using RegisterSectionAttribute = Kentico.PageBuilder.Web.Mvc.RegisterSectionAttribute;
 using RegisterWidgetAttribute = Kentico.PageBuilder.Web.Mvc.RegisterWidgetAttribute;
@@ -119,6 +121,37 @@ public static class ServiceCollectionComponentRegistryExtensions
                 contentTypeNames: attr.ContentTypeNames);
             emailTemplateStore.Add(definition);
         }
+        var formComponentStore = new ComponentDefinitionStore<FormBuilderComponentDefinition>();
+        var formComponentAttrs = assembliesToScan
+            .SelectMany(a => a.GetCustomAttributes(typeof(RegisterFormComponentAttribute), inherit: false))
+            .Cast<RegisterFormComponentAttribute>()
+            .Where(attr => attr.IsAvailableInFormBuilderEditor);
+
+        foreach (var attr in formComponentAttrs)
+        {
+            var definition = new FormBuilderComponentDefinition(
+                identifier: attr.Identifier,
+                name: attr.Name,
+                markedType: attr.MarkedType,
+                description: attr.Description,
+                iconClass: attr.IconClass);
+            formComponentStore.Add(definition);
+        }
+        var formSectionStore = new ComponentDefinitionStore<FormBuilderSectionDefinition>();
+        var formSectionAttrs = assembliesToScan
+            .SelectMany(a => a.GetCustomAttributes(typeof(RegisterFormSectionAttribute), inherit: false))
+            .Cast<RegisterFormSectionAttribute>();
+
+        foreach (var attr in formSectionAttrs)
+        {
+            var definition = new FormBuilderSectionDefinition(
+                identifier: attr.Identifier,
+                name: attr.Name,
+                markedType: attr.MarkedType,
+                description: attr.Description,
+                iconClass: attr.IconClass);
+            formSectionStore.Add(definition);
+        }
         _ = services
             .AddSingleton<IComponentDefinitionStore<PageBuilderWidgetDefinition>>(widgetStore)
             .AddSingleton<IComponentDefinitionStore<PageBuilderSectionDefinition>>(sectionStore)
@@ -126,6 +159,8 @@ public static class ServiceCollectionComponentRegistryExtensions
             .AddSingleton<IComponentDefinitionStore<EmailBuilderWidgetDefinition>>(emailWidgetStore)
             .AddSingleton<IComponentDefinitionStore<EmailBuilderSectionDefinition>>(emailSectionStore)
             .AddSingleton<IComponentDefinitionStore<EmailBuilderTemplateDefinition>>(emailTemplateStore)
+            .AddSingleton<IComponentDefinitionStore<FormBuilderComponentDefinition>>(formComponentStore)
+            .AddSingleton<IComponentDefinitionStore<FormBuilderSectionDefinition>>(formSectionStore)
             .AddScoped<IComponentUsageService, ComponentUsageService>();
 
         return services;

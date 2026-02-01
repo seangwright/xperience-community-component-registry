@@ -90,3 +90,19 @@ export interface EmailConfigurationUsageDetailDto {
   lastModified?: string;
   emailConfigurations: EmailConfigurationUsageDto[];
 }
+
+export interface FormComponentDto {
+  identifier: string;
+  name: string;
+  description?: string;
+  iconClass?: string;
+  markedTypeName?: string;
+}
+
+export interface FormSectionDto {
+  identifier: string;
+  name: string;
+  description?: string;
+  iconClass?: string;
+  markedTypeName?: string;
+}

@@ -47,6 +47,20 @@ public interface IComponentUsageService
     /// <param name="templateIdentifier">The unique identifier of the email template.</param>
     /// <returns>Email configuration usage details including all email configurations and language variants.</returns>
     public Task<EmailConfigurationUsageDetailDto> GetEmailBuilderTemplateUsageAsync(string templateIdentifier);
+
+    /// <summary>
+    /// Gets detailed usage information for a specific form builder component or section.
+    /// </summary>
+    /// <param name="componentIdentifier">The unique identifier of the form component or section.</param>
+    /// <returns>Form class usage details including all form classes using this component.</returns>
+    public Task<FormComponentUsageDetailDto> GetFormBuilderComponentUsageAsync(string componentIdentifier);
+
+    /// <summary>
+    /// Gets detailed usage information for a specific form builder section.
+    /// </summary>
+    /// <param name="sectionIdentifier">The unique identifier of the form section.</param>
+    /// <returns>Form class usage details including all form classes using this section.</returns>
+    public Task<FormComponentUsageDetailDto> GetFormBuilderSectionUsageAsync(string sectionIdentifier);
 }
 
 
@@ -100,6 +114,14 @@ public class ComponentUsageService(ILogger<ComponentUsageService> logger) : ICom
             templateIdentifier,
             "EmailTemplate",
             "ContentItemCommonDataVisualBuilderTemplateConfiguration");
+
+    /// <inheritdoc/>
+    public Task<FormComponentUsageDetailDto> GetFormBuilderComponentUsageAsync(string componentIdentifier) =>
+        GetFormComponentUsage(componentIdentifier, isSection: false);
+
+    /// <inheritdoc/>
+    public Task<FormComponentUsageDetailDto> GetFormBuilderSectionUsageAsync(string sectionIdentifier) =>
+        GetFormComponentUsage(sectionIdentifier, isSection: true);
 
     /// <summary>
     /// Retrieves component usage by querying the database.
@@ -355,6 +377,147 @@ public class ComponentUsageService(ILogger<ComponentUsageService> logger) : ICom
     }
 
     /// <summary>
+    /// Retrieves form component or section usage by querying the CMS_Class and CMS_Form tables.
+    /// For components: searches CMS_Class.ClassFormDefinition for XML-based form definitions.
+    /// For sections: searches CMS_Form.FormBuilderLayout for JSON-based form builder configurations.
+    /// </summary>
+    private async Task<FormComponentUsageDetailDto> GetFormComponentUsage(
+        string componentIdentifier,
+        bool isSection = false,
+        CancellationToken cancellationToken = default)
+    {
+        var result = new FormComponentUsageDetailDto
+        {
+            ComponentIdentifier = componentIdentifier,
+            ComponentType = isSection ? "Section" : "Component",
+            FormClasses = [],
+            FormBuilderForms = []
+        };
+
+        try
+        {
+            // Query for old-style form classes (CMS_Class with XML-based ClassFormDefinition)
+            string classQuery = @"
+                SELECT
+                    C.ClassID,
+                    C.ClassDisplayName,
+                    C.ClassName,
+                    C.ClassXmlSchema,
+                    C.ClassFormDefinition,
+                    C.ClassTableName
+                FROM CMS_Class C
+                WHERE C.ClassType = 'Form'
+                    AND C.ClassFormDefinition LIKE @componentId ESCAPE '\'
+                ORDER BY C.ClassDisplayName";
+
+            var classDataParameters = new QueryDataParameters
+            {
+                { "@componentId", $"%<componentidentifier>{EscapeForLike(componentIdentifier)}</componentidentifier>%" }
+            };
+            var classParameters = new QueryParameters(classQuery, classDataParameters, QueryTypeEnum.SQLQuery);
+
+            using (var connection = ConnectionHelper.GetConnection())
+            {
+                var reader = await connection.ExecuteReaderAsync(classParameters, CommandBehavior.Default, cancellationToken);
+                if (reader is not null)
+                {
+                    DateTime? lastModified = null;
+                    var formClasses = new List<FormClassUsageDto>();
+
+                    while (await reader.ReadAsync(cancellationToken))
+                    {
+                        int classId = reader.GetInt32(reader.GetOrdinal("ClassID"));
+                        string classDisplayName = reader.GetString(reader.GetOrdinal("ClassDisplayName"));
+                        string className = reader.GetString(reader.GetOrdinal("ClassName"));
+                        string classXmlSchema = reader.GetString(reader.GetOrdinal("ClassXmlSchema"));
+                        string classFormDefinition = reader.GetString(reader.GetOrdinal("ClassFormDefinition"));
+                        string classTableName = reader.GetString(reader.GetOrdinal("ClassTableName"));
+
+                        if (lastModified == null)
+                        {
+                            lastModified = DateTime.UtcNow;
+                        }
+
+                        formClasses.Add(new FormClassUsageDto
+                        {
+                            ClassId = classId,
+                            ClassDisplayName = classDisplayName,
+                            ClassName = className,
+                            ClassXmlSchema = classXmlSchema,
+                            ClassFormDefinition = classFormDefinition,
+                            ClassTableName = classTableName
+                        });
+                    }
+
+                    result.FormClasses = formClasses.OrderBy(fc => fc.ClassDisplayName).ToList();
+                    result.LastModified = lastModified;
+                }
+            }
+
+            // Query for form builder forms (CMS_Form with JSON-based FormBuilderLayout)
+            if (isSection)
+            {
+                string formQuery = @"
+                    SELECT
+                        F.FormID,
+                        F.FormName,
+                        F.FormDisplayName,
+                        F.FormBuilderLayout
+                    FROM CMS_Form F
+                    WHERE F.FormBuilderLayout LIKE @sectionType ESCAPE '\'
+                    ORDER BY F.FormDisplayName";
+
+                var formDataParameters = new QueryDataParameters
+                {
+                    { "@sectionType", $"%\"type\": \"{EscapeForLike(componentIdentifier)}\"%"}
+                };
+                var formParameters = new QueryParameters(formQuery, formDataParameters, QueryTypeEnum.SQLQuery);
+
+                using var connection = ConnectionHelper.GetConnection();
+                var reader = await connection.ExecuteReaderAsync(formParameters, CommandBehavior.Default, cancellationToken);
+                if (reader is not null)
+                {
+                    var formBuilderForms = new List<FormBuilderFormUsageDto>();
+
+                    while (await reader.ReadAsync(cancellationToken))
+                    {
+                        int formId = reader.GetInt32(reader.GetOrdinal("FormID"));
+                        string formName = reader.GetString(reader.GetOrdinal("FormName"));
+                        string formDisplayName = reader.GetString(reader.GetOrdinal("FormDisplayName"));
+                        string formBuilderLayout = reader.GetString(reader.GetOrdinal("FormBuilderLayout"));
+
+                        formBuilderForms.Add(new FormBuilderFormUsageDto
+                        {
+                            FormID = formId,
+                            FormName = formName,
+                            FormDisplayName = formDisplayName,
+                            FormBuilderLayout = formBuilderLayout
+                        });
+
+                        if (result.LastModified == null)
+                        {
+                            result.LastModified = DateTime.UtcNow;
+                        }
+                    }
+
+                    result.FormBuilderForms = formBuilderForms;
+                }
+            }
+
+            result.TotalFormClassesUsing = result.FormClasses.Count;
+            result.TotalFormBuilderFormsUsing = result.FormBuilderForms.Count;
+
+            return result;
+        }
+        catch (Exception ex)
+        {
+            string searchType = isSection ? "section" : "component";
+            logger.LogError(ex, "Error retrieving form {SearchType} usage for {ComponentIdentifier}", searchType, componentIdentifier);
+            return result;
+        }
+    }
+
+    /// <summary>
     /// Escapes special characters for SQL LIKE clause.
     /// </summary>
     private static string EscapeForLike(string value) => value
@@ -604,4 +767,106 @@ public class EmailConfigurationVariantDto
     /// Whether this language variant is published.
     /// </summary>
     public bool IsPublished { get; set; }
+}
+
+/// <summary>
+/// Represents detailed usage information for a specific form builder component or section across the system.
+/// </summary>
+public class FormComponentUsageDetailDto
+{
+    /// <summary>
+    /// The unique identifier of the component or section.
+    /// </summary>
+    public string ComponentIdentifier { get; set; } = string.Empty;
+
+    /// <summary>
+    /// The type of component: "Component" or "Section".
+    /// </summary>
+    public string ComponentType { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Total number of form classes using this component/section (legacy XML-based forms).
+    /// </summary>
+    public int TotalFormClassesUsing { get; set; }
+
+    /// <summary>
+    /// Total number of form builder forms using this component/section (modern JSON-based forms).
+    /// </summary>
+    public int TotalFormBuilderFormsUsing { get; set; }
+
+    /// <summary>
+    /// The date when this component/section was last used or modified.
+    /// </summary>
+    public DateTime? LastModified { get; set; }
+
+    /// <summary>
+    /// List of form classes using this component/section (legacy forms).
+    /// </summary>
+    public List<FormClassUsageDto> FormClasses { get; set; } = [];
+
+    /// <summary>
+    /// List of form builder forms using this component/section (form builder forms).
+    /// </summary>
+    public List<FormBuilderFormUsageDto> FormBuilderForms { get; set; } = [];
+}
+
+/// <summary>
+/// Represents a form class that uses a specific component.
+/// </summary>
+public class FormClassUsageDto
+{
+    /// <summary>
+    /// The ID of the form class.
+    /// </summary>
+    public int ClassId { get; set; }
+
+    /// <summary>
+    /// The display name of the form class.
+    /// </summary>
+    public string ClassDisplayName { get; set; } = string.Empty;
+
+    /// <summary>
+    /// The code name of the form class.
+    /// </summary>
+    public string ClassName { get; set; } = string.Empty;
+
+    /// <summary>
+    /// The XML schema definition for the form class.
+    /// </summary>
+    public string ClassXmlSchema { get; set; } = string.Empty;
+
+    /// <summary>
+    /// The form definition XML containing the component configuration.
+    /// </summary>
+    public string ClassFormDefinition { get; set; } = string.Empty;
+
+    /// <summary>
+    /// The table name associated with the form class.
+    /// </summary>
+    public string ClassTableName { get; set; } = string.Empty;
+}
+/// <summary>
+/// Represents a form builder form that uses a specific component or section.
+/// </summary>
+public class FormBuilderFormUsageDto
+{
+    /// <summary>
+    /// The ID of the form.
+    /// </summary>
+    public int FormID { get; set; }
+
+    /// <summary>
+    /// The code name of the form.
+    /// </summary>
+    public string FormName { get; set; } = string.Empty;
+
+    /// <summary>
+    /// The display name of the form.
+    /// </summary>
+    public string FormDisplayName { get; set; } = string.Empty;
+
+    /// <summary>
+    /// The complete JSON form builder layout configuration.
+    /// </summary>
+    public string FormBuilderLayout { get; set; } = string.Empty;
 }
