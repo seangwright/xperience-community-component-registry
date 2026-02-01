@@ -1,6 +1,6 @@
-﻿using XperienceCommunity.ComponentRegistry.Admin;
+﻿using Kentico.Xperience.Admin.Base;
 
-using Kentico.Xperience.Admin.Base;
+using XperienceCommunity.ComponentRegistry.Admin;
 
 [assembly: CMS.RegisterModule(typeof(ComponentRegistryWebAdminModule))]
 

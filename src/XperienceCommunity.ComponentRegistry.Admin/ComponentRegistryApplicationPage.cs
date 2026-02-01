@@ -1,7 +1,7 @@
-using XperienceCommunity.ComponentRegistry.Admin;
-
 using Kentico.Xperience.Admin.Base;
 using Kentico.Xperience.Admin.Base.UIPages;
+
+using XperienceCommunity.ComponentRegistry.Admin;
 
 [assembly: UIApplication(
     identifier: ComponentRegistryApplicationPage.IDENTIFIER,

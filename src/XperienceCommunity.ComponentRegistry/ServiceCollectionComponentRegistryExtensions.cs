@@ -1,10 +1,10 @@
+using System.Reflection;
+
 using Microsoft.Extensions.DependencyInjection;
 
-using RegisterWidgetAttribute = Kentico.PageBuilder.Web.Mvc.RegisterWidgetAttribute;
-using RegisterSectionAttribute = Kentico.PageBuilder.Web.Mvc.RegisterSectionAttribute;
 using RegisterPageTemplateAttribute = Kentico.PageBuilder.Web.Mvc.PageTemplates.RegisterPageTemplateAttribute;
-
-using System.Reflection;
+using RegisterSectionAttribute = Kentico.PageBuilder.Web.Mvc.RegisterSectionAttribute;
+using RegisterWidgetAttribute = Kentico.PageBuilder.Web.Mvc.RegisterWidgetAttribute;
 
 namespace XperienceCommunity.ComponentRegistry;
 

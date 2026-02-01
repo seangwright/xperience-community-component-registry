@@ -1,10 +1,9 @@
 using CMS.Membership;
 
-using XperienceCommunity.ComponentRegistry.Admin;
-
-using Kentico.Xperience.Admin.Base;
-using CMS.Core;
 using Kentico.Builder.Web.Mvc;
+using Kentico.Xperience.Admin.Base;
+
+using XperienceCommunity.ComponentRegistry.Admin;
 
 [assembly: UIPage(
     uiPageType: typeof(PageBuilderComponentViewerPage),
