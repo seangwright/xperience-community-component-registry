@@ -17,31 +17,27 @@ This project enables administrators to view all registered custom components in 
 
 ### Library Version Matrix
 
----This matrix explains which versions of the library are compatible with different versions of Xperience by Kentico / Kentico Xperience 13---
-
 | Xperience Version | Library Version |
 | ----------------- | --------------- |
 | >= 31.1.0         | 1.0.0           |
 
 ### Dependencies
 
----These are all the dependencies required to use (not build) the library---
-
 - [ASP.NET Core 10.0](https://dotnet.microsoft.com/en-us/download)
 - [Xperience by Kentico](https://docs.kentico.com)
 
-### Other requirements
-
----A list of other requirements and prerequisites needed to use the library. If there are none, don't include this section in the readme.---
-
 ## Package Installation
 
----This details the steps required to add the library to a solution. This could include multiple packages (NuGet and/or npm)---
-
-Add the package to your application using the .NET CLI
+Add the "Admin" package to your ASP.NET Core application using the .NET CLI. This includes the custom admin UI application and all required services.
 
 ```powershell
 dotnet add package XperienceCommunity.ComponentRegistry.Admin
+```
+
+If you wish to separately install just the registry services, you can use the following:
+
+```powershell
+dotnet add package XperienceCommunity.ComponentRegistry
 ```
 
 ## Quick Start
