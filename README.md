@@ -2,6 +2,12 @@
 
 [![CI: Build and Test](https://github.com/seangwright/xperience-community-component-registry/actions/workflows/ci.yml/badge.svg)](https://github.com/seangwright/xperience-community-component-registry/actions/workflows/ci.yml)
 
+[![Release: Publish to NuGet](https://github.com/seangwright/xperience-community-component-registry/actions/workflows/publish.yml/badge.svg)](https://github.com/seangwright/xperience-community-component-registry/actions/workflows/publish.yml)
+
+[![NuGet Package](https://img.shields.io/nuget/v/XperienceCommunity.ComponentRegistry.svg)](https://www.nuget.org/packages/XperienceCommunity.ComponentRegistry)
+
+[![NuGet Package](https://img.shields.io/nuget/v/XperienceCommunity.ComponentRegistry.Admin.svg)](https://www.nuget.org/packages/XperienceCommunity.ComponentRegistry.Admin)
+
 ## Description
 
 This project enables administrators to view all registered custom components in an Xperience by Kentico application, like Page Builder widgets, and explore which channels and web pages use those components all through a friendly user interface in the Xperience administration.
