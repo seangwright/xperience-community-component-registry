@@ -36,7 +36,7 @@ This project enables administrators to view all registered custom components in 
 
 | Xperience Version | Library Version |
 | ----------------- | --------------- |
-| >= 31.1.0         | >= 1.0.0        |
+| >= 31.1.1         | >= 1.0.0        |
 
 ### Dependencies
 
@@ -73,7 +73,7 @@ Run the application and navigate to the "Component Registry" application in the 
 
 ## Full Instructions
 
-View the [Usage Guide](./docs/Usage-Guide.md) for more detailed instructions.
+View the [Usage Guide](./docs/Usage-Guide.md) for more detailed instructions on permission management and custom scenarios.
 
 ## Contributing
 
