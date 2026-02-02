@@ -46,7 +46,8 @@ public static class ServiceCollectionComponentRegistryExtensions
             var store = new ComponentDefinitionStore<PageBuilderWidgetDefinition>();
             var attrs = assemblies
                 .SelectMany(a => a.GetCustomAttributes(typeof(RegisterWidgetAttribute), inherit: false))
-                .Cast<RegisterWidgetAttribute>();
+                .Cast<RegisterWidgetAttribute>()
+                .DistinctBy(a => a.Identifier);
 
             foreach (var attr in attrs)
             {
@@ -66,7 +67,8 @@ public static class ServiceCollectionComponentRegistryExtensions
             var store = new ComponentDefinitionStore<PageBuilderSectionDefinition>();
             var attrs = assemblies
                 .SelectMany(a => a.GetCustomAttributes(typeof(RegisterSectionAttribute), inherit: false))
-                .Cast<RegisterSectionAttribute>();
+                .Cast<RegisterSectionAttribute>()
+                .DistinctBy(a => a.Identifier);
 
             foreach (var attr in attrs)
             {
@@ -85,7 +87,8 @@ public static class ServiceCollectionComponentRegistryExtensions
             var store = new ComponentDefinitionStore<PageBuilderPageTemplateDefinition>();
             var attrs = assemblies
                 .SelectMany(a => a.GetCustomAttributes(typeof(RegisterPageTemplateAttribute), inherit: false))
-                .Cast<RegisterPageTemplateAttribute>();
+                .Cast<RegisterPageTemplateAttribute>()
+                .DistinctBy(a => a.Identifier);
 
             foreach (var attr in attrs)
             {
@@ -105,7 +108,8 @@ public static class ServiceCollectionComponentRegistryExtensions
             var store = new ComponentDefinitionStore<EmailBuilderWidgetDefinition>();
             var attrs = assemblies
                 .SelectMany(a => a.GetCustomAttributes(typeof(RegisterEmailWidgetAttribute), inherit: false))
-                .Cast<RegisterEmailWidgetAttribute>();
+                .Cast<RegisterEmailWidgetAttribute>()
+                .DistinctBy(a => a.Identifier);
 
             foreach (var attr in attrs)
             {
@@ -125,7 +129,8 @@ public static class ServiceCollectionComponentRegistryExtensions
             var store = new ComponentDefinitionStore<EmailBuilderSectionDefinition>();
             var attrs = assemblies
                 .SelectMany(a => a.GetCustomAttributes(typeof(RegisterEmailSectionAttribute), inherit: false))
-                .Cast<RegisterEmailSectionAttribute>();
+                .Cast<RegisterEmailSectionAttribute>()
+                .DistinctBy(a => a.Identifier);
 
             foreach (var attr in attrs)
             {
@@ -144,7 +149,8 @@ public static class ServiceCollectionComponentRegistryExtensions
             var store = new ComponentDefinitionStore<EmailBuilderTemplateDefinition>();
             var attrs = assemblies
                 .SelectMany(a => a.GetCustomAttributes(typeof(RegisterEmailTemplateAttribute), inherit: false))
-                .Cast<RegisterEmailTemplateAttribute>();
+                .Cast<RegisterEmailTemplateAttribute>()
+                .DistinctBy(a => a.Identifier);
 
             foreach (var attr in attrs)
             {
@@ -165,7 +171,8 @@ public static class ServiceCollectionComponentRegistryExtensions
             var attrs = assemblies
                 .SelectMany(a => a.GetCustomAttributes(typeof(RegisterFormComponentAttribute), inherit: false))
                 .Cast<RegisterFormComponentAttribute>()
-                .Where(attr => attr.IsAvailableInFormBuilderEditor);
+                .Where(attr => attr.IsAvailableInFormBuilderEditor)
+                .DistinctBy(a => a.Identifier);
 
             foreach (var attr in attrs)
             {
@@ -184,7 +191,8 @@ public static class ServiceCollectionComponentRegistryExtensions
             var store = new ComponentDefinitionStore<FormBuilderSectionDefinition>();
             var attrs = assemblies
                 .SelectMany(a => a.GetCustomAttributes(typeof(RegisterFormSectionAttribute), inherit: false))
-                .Cast<RegisterFormSectionAttribute>();
+                .Cast<RegisterFormSectionAttribute>()
+                .DistinctBy(a => a.Identifier);
 
             foreach (var attr in attrs)
             {
