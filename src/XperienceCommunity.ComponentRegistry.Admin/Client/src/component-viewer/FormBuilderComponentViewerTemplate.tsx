@@ -26,13 +26,15 @@ import {
 interface FormBuilderComponentViewerClientProperties {
   formComponents: FormComponentDto[];
   formSections: FormSectionDto[];
+  canViewFormBuilderUsages: boolean;
 }
 
 // Table row component for form builder components
 const FormComponentTableRow: React.FC<{
   component: FormComponentDto | FormSectionDto;
   componentType: 'component' | 'section';
-}> = ({ component, componentType }) => {
+  canViewFormBuilderUsages: boolean;
+}> = ({ component, componentType, canViewFormBuilderUsages }) => {
   const [expanded, setExpanded] = useState(false);
   const [usageData, setUsageData] =
     useState<FormComponentUsageDetailDto | null>(null);
@@ -60,6 +62,9 @@ const FormComponentTableRow: React.FC<{
 
   const handleExpandClick = async () => {
     if (!expanded && !usageData) {
+      if (!canViewFormBuilderUsages) {
+        return;
+      }
       setIsLoading(true);
       try {
         const params = { componentIdentifier: component.identifier };
@@ -82,8 +87,13 @@ const FormComponentTableRow: React.FC<{
         <TableCell className="w-10">
           <button
             onClick={handleExpandClick}
-            disabled={isLoading}
-            className="p-1 hover:bg-slate-100 rounded transition-colors disabled:opacity-50"
+            disabled={isLoading || !canViewFormBuilderUsages}
+            title={
+              !canViewFormBuilderUsages
+                ? 'Permission required to view component usages'
+                : ''
+            }
+            className="p-1 hover:bg-slate-100 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isLoading ? (
               <Loader size={16} className="text-slate-600 animate-spin" />
@@ -443,6 +453,9 @@ export const FormBuilderComponentViewerTemplate = (
                             key={component.identifier}
                             component={component}
                             componentType="component"
+                            canViewFormBuilderUsages={
+                              props.canViewFormBuilderUsages
+                            }
                           />
                         ))}
                       </TableBody>
@@ -497,6 +510,9 @@ export const FormBuilderComponentViewerTemplate = (
                             key={section.identifier}
                             component={section}
                             componentType="section"
+                            canViewFormBuilderUsages={
+                              props.canViewFormBuilderUsages
+                            }
                           />
                         ))}
                       </TableBody>

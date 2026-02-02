@@ -28,13 +28,15 @@ interface EmailBuilderComponentViewerClientProperties {
   widgets: EmailComponentDto[];
   sections: EmailComponentDto[];
   emailTemplates: EmailTemplateDto[];
+  canViewEmailBuilderUsages: boolean;
 }
 
 // Table row component for email builder components with expandable details
 const EmailComponentTableRow: React.FC<{
   component: EmailComponentDto | EmailTemplateDto;
   componentType: 'widget' | 'section' | 'template';
-}> = ({ component, componentType }) => {
+  canViewEmailBuilderUsages: boolean;
+}> = ({ component, componentType, canViewEmailBuilderUsages }) => {
   const [expanded, setExpanded] = useState(false);
   const [usageData, setUsageData] =
     useState<EmailConfigurationUsageDetailDto | null>(null);
@@ -59,6 +61,9 @@ const EmailComponentTableRow: React.FC<{
 
   const handleExpandClick = async () => {
     if (!expanded && !usageData) {
+      if (!canViewEmailBuilderUsages) {
+        return;
+      }
       try {
         const params = { componentIdentifier: component.identifier };
         if (componentType === 'template') {
@@ -83,8 +88,13 @@ const EmailComponentTableRow: React.FC<{
         <TableCell className="w-10">
           <button
             onClick={handleExpandClick}
-            disabled={!usageData && expanded}
-            className="p-1 hover:bg-slate-100 rounded transition-colors disabled:opacity-50"
+            disabled={!canViewEmailBuilderUsages || (!usageData && expanded)}
+            title={
+              !canViewEmailBuilderUsages
+                ? 'Permission required to view component usages'
+                : ''
+            }
+            className="p-1 hover:bg-slate-100 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {!usageData && expanded ? (
               <Loader size={16} className="animate-spin text-slate-600" />
@@ -335,6 +345,9 @@ export const EmailBuilderComponentViewerTemplate = (
                             key={widget.identifier}
                             component={widget}
                             componentType="widget"
+                            canViewEmailBuilderUsages={
+                              props.canViewEmailBuilderUsages
+                            }
                           />
                         ))}
                       </TableBody>
@@ -389,6 +402,9 @@ export const EmailBuilderComponentViewerTemplate = (
                             key={section.identifier}
                             component={section}
                             componentType="section"
+                            canViewEmailBuilderUsages={
+                              props.canViewEmailBuilderUsages
+                            }
                           />
                         ))}
                       </TableBody>
@@ -446,6 +462,9 @@ export const EmailBuilderComponentViewerTemplate = (
                             key={template.identifier}
                             component={template}
                             componentType="template"
+                            canViewEmailBuilderUsages={
+                              props.canViewEmailBuilderUsages
+                            }
                           />
                         ))}
                       </TableBody>

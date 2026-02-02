@@ -17,15 +17,16 @@ namespace XperienceCommunity.ComponentRegistry.Admin;
 /// <summary>
 /// Page for displaying all registered email builder component definitions.
 /// </summary>
-[UIPermission(ComponentRegistryPermissions.VIEW_EMAIL_BUILDER)]
+[UIEvaluatePermission(ComponentRegistryPermissions.VIEW_EMAIL_BUILDER)]
 public class EmailBuilderComponentViewerPage(
     IComponentDefinitionStore<EmailBuilderWidgetDefinition> emailWidgetStore,
     IComponentDefinitionStore<EmailBuilderSectionDefinition> emailSectionStore,
     IComponentDefinitionStore<EmailBuilderTemplateDefinition> emailTemplateStore,
     IComponentUsageService componentUsageService,
-    IAdminBuildersLocalizationService localizer) : Page<EmailBuilderComponentViewerPageClientProperties>
+    IAdminBuildersLocalizationService localizer,
+    IUIPermissionEvaluator permissionEvaluator) : Page<EmailBuilderComponentViewerPageClientProperties>
 {
-    public override Task<EmailBuilderComponentViewerPageClientProperties> ConfigureTemplateProperties(
+    public override async Task<EmailBuilderComponentViewerPageClientProperties> ConfigureTemplateProperties(
         EmailBuilderComponentViewerPageClientProperties properties)
     {
         var widgets = emailWidgetStore.GetAll()
@@ -62,7 +63,12 @@ public class EmailBuilderComponentViewerPage(
         properties.Sections = sections;
         properties.EmailTemplates = emailTemplates;
 
-        return Task.FromResult(properties);
+        // Evaluate permissions and propagate to client
+        var canViewEmailBuilderUsages = await permissionEvaluator.Evaluate(
+            ComponentRegistryPermissions.VIEW_EMAIL_BUILDER_USAGES);
+        properties.CanViewEmailBuilderUsages = canViewEmailBuilderUsages.Succeeded;
+
+        return properties;
     }
 
     /// <summary>
@@ -94,6 +100,7 @@ public class EmailBuilderComponentViewerPageClientProperties : TemplateClientPro
     public IEnumerable<EmailComponentDto> Widgets { get; set; } = [];
     public IEnumerable<EmailComponentDto> Sections { get; set; } = [];
     public IEnumerable<EmailTemplateDto> EmailTemplates { get; set; } = [];
+    public bool CanViewEmailBuilderUsages { get; set; }
 }
 
 /// <summary>

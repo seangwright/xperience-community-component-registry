@@ -28,13 +28,15 @@ interface PageBuilderComponentViewerClientProperties {
   widgets: ComponentDto[];
   sections: ComponentDto[];
   pageTemplates: PageTemplateDto[];
+  canViewPageBuilderUsages: boolean;
 }
 
 // Table row component with expandable details
 const ComponentTableRow: React.FC<{
   component: ComponentDto | PageTemplateDto;
   componentType: 'widget' | 'section' | 'template';
-}> = ({ component, componentType }) => {
+  canViewPageBuilderUsages: boolean;
+}> = ({ component, componentType, canViewPageBuilderUsages }) => {
   const [expanded, setExpanded] = useState(false);
   const [usageData, setUsageData] = useState<ComponentUsageDetailDto | null>(
     null,
@@ -60,6 +62,9 @@ const ComponentTableRow: React.FC<{
 
   const handleExpandClick = async () => {
     if (!expanded && !usageData) {
+      if (!canViewPageBuilderUsages) {
+        return;
+      }
       try {
         const params = { componentIdentifier: component.identifier };
         if (componentType === 'template') {
@@ -84,8 +89,13 @@ const ComponentTableRow: React.FC<{
         <TableCell className="w-10">
           <button
             onClick={handleExpandClick}
-            disabled={!usageData && expanded}
-            className="p-1 hover:bg-slate-100 rounded transition-colors disabled:opacity-50"
+            disabled={!canViewPageBuilderUsages || (!usageData && expanded)}
+            title={
+              !canViewPageBuilderUsages
+                ? 'Permission required to view component usages'
+                : ''
+            }
+            className="p-1 hover:bg-slate-100 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {!usageData && expanded ? (
               <Loader size={16} className="animate-spin text-slate-600" />
@@ -316,6 +326,9 @@ export const PageBuilderComponentViewerTemplate = (
                             key={widget.identifier}
                             component={widget}
                             componentType="widget"
+                            canViewPageBuilderUsages={
+                              props.canViewPageBuilderUsages
+                            }
                           />
                         ))}
                       </TableBody>
@@ -370,6 +383,9 @@ export const PageBuilderComponentViewerTemplate = (
                             key={section.identifier}
                             component={section}
                             componentType="section"
+                            canViewPageBuilderUsages={
+                              props.canViewPageBuilderUsages
+                            }
                           />
                         ))}
                       </TableBody>
@@ -427,6 +443,9 @@ export const PageBuilderComponentViewerTemplate = (
                             key={template.identifier}
                             component={template}
                             componentType="template"
+                            canViewPageBuilderUsages={
+                              props.canViewPageBuilderUsages
+                            }
                           />
                         ))}
                       </TableBody>

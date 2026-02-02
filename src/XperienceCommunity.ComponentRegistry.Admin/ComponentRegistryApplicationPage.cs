@@ -1,3 +1,5 @@
+using CMS.Membership;
+
 using Kentico.Xperience.Admin.Base;
 using Kentico.Xperience.Admin.Base.UIPages;
 
@@ -17,12 +19,13 @@ namespace XperienceCommunity.ComponentRegistry.Admin;
 /// <summary>
 /// Application page for viewing registered components.
 /// </summary>
-[UIPermission(ComponentRegistryPermissions.VIEW_PAGE_BUILDER)]
-[UIPermission(ComponentRegistryPermissions.VIEW_PAGE_BUILDER_USAGES)]
-[UIPermission(ComponentRegistryPermissions.VIEW_FORM_BUILDER)]
-[UIPermission(ComponentRegistryPermissions.VIEW_FORM_BUILDER_USAGES)]
-[UIPermission(ComponentRegistryPermissions.VIEW_EMAIL_BUILDER)]
-[UIPermission(ComponentRegistryPermissions.VIEW_EMAIL_BUILDER_USAGES)]
+[UIPermission(ComponentRegistryPermissions.VIEW_PAGE_BUILDER, displayName: "View Page Builder components")]
+[UIPermission(ComponentRegistryPermissions.VIEW_PAGE_BUILDER_USAGES, displayName: "View Page Builder component usages")]
+[UIPermission(ComponentRegistryPermissions.VIEW_FORM_BUILDER, displayName: "View Form Builder components")]
+[UIPermission(ComponentRegistryPermissions.VIEW_FORM_BUILDER_USAGES, displayName: "View Form Builder component usages")]
+[UIPermission(ComponentRegistryPermissions.VIEW_EMAIL_BUILDER, displayName: "View Email Builder components")]
+[UIPermission(ComponentRegistryPermissions.VIEW_EMAIL_BUILDER_USAGES, displayName: "View Email Builder component usages")]
+[UIPermission(SystemPermissions.VIEW)]
 public class ComponentRegistryApplicationPage : ApplicationPage
 {
     public const string IDENTIFIER = "XperienceCommunity.ComponentRegistry.Admin.App";

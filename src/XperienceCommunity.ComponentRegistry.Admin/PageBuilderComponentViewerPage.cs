@@ -17,15 +17,16 @@ namespace XperienceCommunity.ComponentRegistry.Admin;
 /// <summary>
 /// Page for displaying all registered component definitions.
 /// </summary>
-[UIPermission(ComponentRegistryPermissions.VIEW_PAGE_BUILDER)]
+[UIEvaluatePermission(ComponentRegistryPermissions.VIEW_PAGE_BUILDER)]
 public class PageBuilderComponentViewerPage(
     IComponentDefinitionStore<PageBuilderWidgetDefinition> widgetStore,
     IComponentDefinitionStore<PageBuilderSectionDefinition> sectionStore,
     IComponentDefinitionStore<PageBuilderPageTemplateDefinition> pageTemplateStore,
     IComponentUsageService componentUsageService,
-    IAdminBuildersLocalizationService localizer) : Page<PageBuilderComponentViewerPageClientProperties>
+    IAdminBuildersLocalizationService localizer,
+    IUIPermissionEvaluator permissionEvaluator) : Page<PageBuilderComponentViewerPageClientProperties>
 {
-    public override Task<PageBuilderComponentViewerPageClientProperties> ConfigureTemplateProperties(
+    public override async Task<PageBuilderComponentViewerPageClientProperties> ConfigureTemplateProperties(
         PageBuilderComponentViewerPageClientProperties properties)
     {
         var widgets = widgetStore.GetAll()
@@ -60,7 +61,12 @@ public class PageBuilderComponentViewerPage(
         properties.Sections = sections;
         properties.PageTemplates = pageTemplates;
 
-        return Task.FromResult(properties);
+        // Evaluate permissions and propagate to client
+        var canViewPageBuilderUsages = await permissionEvaluator.Evaluate(
+            ComponentRegistryPermissions.VIEW_PAGE_BUILDER_USAGES);
+        properties.CanViewPageBuilderUsages = canViewPageBuilderUsages.Succeeded;
+
+        return properties;
     }
 
     /// <summary>
@@ -92,6 +98,7 @@ public class PageBuilderComponentViewerPageClientProperties : TemplateClientProp
     public IEnumerable<ComponentDto> Widgets { get; set; } = [];
     public IEnumerable<ComponentDto> Sections { get; set; } = [];
     public IEnumerable<PageTemplateDto> PageTemplates { get; set; } = [];
+    public bool CanViewPageBuilderUsages { get; set; }
 }
 
 /// <summary>

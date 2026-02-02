@@ -17,14 +17,15 @@ namespace XperienceCommunity.ComponentRegistry.Admin;
 /// <summary>
 /// Page for displaying all registered form builder component definitions.
 /// </summary>
-[UIPermission(ComponentRegistryPermissions.VIEW_FORM_BUILDER)]
+[UIEvaluatePermission(ComponentRegistryPermissions.VIEW_FORM_BUILDER)]
 public class FormBuilderComponentViewerPage(
     IComponentDefinitionStore<FormBuilderComponentDefinition> formComponentStore,
     IComponentDefinitionStore<FormBuilderSectionDefinition> formSectionStore,
     IAdminBuildersLocalizationService localizer,
-    IComponentUsageService componentUsageService) : Page<FormBuilderComponentViewerPageClientProperties>
+    IComponentUsageService componentUsageService,
+    IUIPermissionEvaluator permissionEvaluator) : Page<FormBuilderComponentViewerPageClientProperties>
 {
-    public override Task<FormBuilderComponentViewerPageClientProperties> ConfigureTemplateProperties(
+    public override async Task<FormBuilderComponentViewerPageClientProperties> ConfigureTemplateProperties(
         FormBuilderComponentViewerPageClientProperties properties)
     {
         var formComponents = formComponentStore.GetAll()
@@ -48,7 +49,12 @@ public class FormBuilderComponentViewerPage(
         properties.FormComponents = formComponents;
         properties.FormSections = formSections;
 
-        return Task.FromResult(properties);
+        // Evaluate permissions and propagate to client
+        var canViewFormBuilderUsages = await permissionEvaluator.Evaluate(
+            ComponentRegistryPermissions.VIEW_FORM_BUILDER_USAGES);
+        properties.CanViewFormBuilderUsages = canViewFormBuilderUsages.Succeeded;
+
+        return properties;
     }
 
     [PageCommand(CommandName = "GetFormBuilderComponentUsage", Permission = ComponentRegistryPermissions.VIEW_FORM_BUILDER_USAGES)]
@@ -89,6 +95,7 @@ public class FormBuilderComponentViewerPageClientProperties : TemplateClientProp
 {
     public IEnumerable<FormComponentDto> FormComponents { get; set; } = [];
     public IEnumerable<FormSectionDto> FormSections { get; set; } = [];
+    public bool CanViewFormBuilderUsages { get; set; }
 }
 
 /// <summary>
