@@ -4,7 +4,7 @@
     <Authors>Sean G. Wright</Authors>
     <Copyright>Copyright © $(Author) $([System.DateTime]::Now.Year)</Copyright>
     <Trademark>$(Author)™</Trademark>
-    <VersionPrefix>1.0.1</VersionPrefix>
+    <VersionPrefix>1.0.2</VersionPrefix>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
 
     <PackageProjectUrl>https://github.com/seangwright/xperience-community-component-registry</PackageProjectUrl>
