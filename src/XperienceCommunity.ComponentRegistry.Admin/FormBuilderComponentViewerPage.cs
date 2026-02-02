@@ -1,5 +1,3 @@
-using CMS.Membership;
-
 using Kentico.Builder.Web.Mvc;
 using Kentico.Xperience.Admin.Base;
 
@@ -19,7 +17,7 @@ namespace XperienceCommunity.ComponentRegistry.Admin;
 /// <summary>
 /// Page for displaying all registered form builder component definitions.
 /// </summary>
-[UIPermission(SystemPermissions.VIEW)]
+[UIPermission(ComponentRegistryPermissions.VIEW_FORM_BUILDER)]
 public class FormBuilderComponentViewerPage(
     IComponentDefinitionStore<FormBuilderComponentDefinition> formComponentStore,
     IComponentDefinitionStore<FormBuilderSectionDefinition> formSectionStore,
@@ -53,8 +51,8 @@ public class FormBuilderComponentViewerPage(
         return Task.FromResult(properties);
     }
 
-    [PageCommand]
-    public async Task<ICommandResponse> GetFormBuilderComponentUsageAsync(
+    [PageCommand(CommandName = "GetFormBuilderComponentUsage", Permission = ComponentRegistryPermissions.VIEW_FORM_BUILDER_USAGES)]
+    public async Task<ICommandResponse> GetFormBuilderComponentUsage(
         ComponentDetailsParams @params)
     {
         if (@params?.ComponentIdentifier is null)
@@ -68,8 +66,8 @@ public class FormBuilderComponentViewerPage(
         return ResponseFrom(usage);
     }
 
-    [PageCommand]
-    public async Task<ICommandResponse> GetFormBuilderSectionUsageAsync(
+    [PageCommand(CommandName = "GetFormBuilderSectionUsage", Permission = ComponentRegistryPermissions.VIEW_FORM_BUILDER_USAGES)]
+    public async Task<ICommandResponse> GetFormBuilderSectionUsage(
         ComponentDetailsParams @params)
     {
         if (@params?.ComponentIdentifier is null)

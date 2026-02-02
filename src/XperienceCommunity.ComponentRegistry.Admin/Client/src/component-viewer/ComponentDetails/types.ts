@@ -106,3 +106,29 @@ export interface FormSectionDto {
   iconClass?: string;
   markedTypeName?: string;
 }
+
+export interface FormClassUsageDto {
+  classId: number;
+  classDisplayName: string;
+  className: string;
+  classXmlSchema: string;
+  classFormDefinition: string;
+  classTableName: string;
+}
+
+export interface FormBuilderFormUsageDto {
+  formID: number;
+  formName: string;
+  formDisplayName: string;
+  formBuilderLayout: string;
+}
+
+export interface FormComponentUsageDetailDto {
+  componentIdentifier: string;
+  componentType: string;
+  totalFormClassesUsing: number;
+  totalFormBuilderFormsUsing: number;
+  lastModified?: string;
+  formClasses: FormClassUsageDto[];
+  formBuilderForms: FormBuilderFormUsageDto[];
+}

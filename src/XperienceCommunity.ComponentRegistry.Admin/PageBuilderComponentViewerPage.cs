@@ -1,5 +1,3 @@
-using CMS.Membership;
-
 using Kentico.Builder.Web.Mvc;
 using Kentico.Xperience.Admin.Base;
 
@@ -19,7 +17,7 @@ namespace XperienceCommunity.ComponentRegistry.Admin;
 /// <summary>
 /// Page for displaying all registered component definitions.
 /// </summary>
-[UIPermission(SystemPermissions.VIEW)]
+[UIPermission(ComponentRegistryPermissions.VIEW_PAGE_BUILDER)]
 public class PageBuilderComponentViewerPage(
     IComponentDefinitionStore<PageBuilderWidgetDefinition> widgetStore,
     IComponentDefinitionStore<PageBuilderSectionDefinition> sectionStore,
@@ -68,7 +66,7 @@ public class PageBuilderComponentViewerPage(
     /// <summary>
     /// Retrieves detailed usage information for a page builder page template component.
     /// </summary>
-    [PageCommand(CommandName = "GetPageBuilderPageTemplateUsage", Permission = SystemPermissions.VIEW)]
+    [PageCommand(CommandName = "GetPageBuilderPageTemplateUsage", Permission = ComponentRegistryPermissions.VIEW_PAGE_BUILDER_USAGES)]
     public async Task<ICommandResponse> GetPageBuilderPageTemplateUsage(ComponentDetailsParams @params)
     {
         var usage = await componentUsageService.GetPageBuilderPageTemplateUsageAsync(@params.ComponentIdentifier);
@@ -78,7 +76,7 @@ public class PageBuilderComponentViewerPage(
     /// <summary>
     /// Retrieves detailed usage information for a page builder widget component.
     /// </summary>
-    [PageCommand(CommandName = "GetPageBuilderWidgetUsage", Permission = SystemPermissions.VIEW)]
+    [PageCommand(CommandName = "GetPageBuilderWidgetUsage", Permission = ComponentRegistryPermissions.VIEW_PAGE_BUILDER_USAGES)]
     public async Task<ICommandResponse> GetPageBuilderWidgetUsage(ComponentDetailsParams @params)
     {
         var usage = await componentUsageService.GetPageBuilderWidgetUsageAsync(@params.ComponentIdentifier);

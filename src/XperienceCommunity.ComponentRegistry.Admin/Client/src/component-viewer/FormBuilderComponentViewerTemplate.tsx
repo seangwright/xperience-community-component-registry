@@ -17,48 +17,11 @@ import {
 } from './ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import { ChevronDown, Loader } from 'lucide-react';
-
-interface FormComponentDto {
-  identifier: string;
-  name: string;
-  description?: string;
-  iconClass?: string;
-  markedTypeName?: string;
-}
-
-interface FormSectionDto {
-  identifier: string;
-  name: string;
-  description?: string;
-  iconClass?: string;
-  markedTypeName?: string;
-}
-
-interface FormClassUsageDto {
-  classId: number;
-  classDisplayName: string;
-  className: string;
-  classXmlSchema: string;
-  classFormDefinition: string;
-  classTableName: string;
-}
-
-interface FormBuilderFormUsageDto {
-  formID: number;
-  formName: string;
-  formDisplayName: string;
-  formBuilderLayout: string;
-}
-
-interface FormComponentUsageDetailDto {
-  componentIdentifier: string;
-  componentType: string;
-  totalFormClassesUsing: number;
-  totalFormBuilderFormsUsing: number;
-  lastModified?: string;
-  formClasses: FormClassUsageDto[];
-  formBuilderForms: FormBuilderFormUsageDto[];
-}
+import {
+  FormComponentDto,
+  FormComponentUsageDetailDto,
+  FormSectionDto,
+} from './ComponentDetails';
 
 interface FormBuilderComponentViewerClientProperties {
   formComponents: FormComponentDto[];
@@ -78,7 +41,7 @@ const FormComponentTableRow: React.FC<{
   const { execute: getFormBuilderComponentUsage } = usePageCommand<
     FormComponentUsageDetailDto,
     { componentIdentifier: string }
-  >('GetFormBuilderComponentUsageAsync', {
+  >('GetFormBuilderComponentUsage', {
     after: (response) => {
       if (response) setUsageData(response);
       setIsLoading(false);
@@ -88,7 +51,7 @@ const FormComponentTableRow: React.FC<{
   const { execute: getFormBuilderSectionUsage } = usePageCommand<
     FormComponentUsageDetailDto,
     { componentIdentifier: string }
-  >('GetFormBuilderSectionUsageAsync', {
+  >('GetFormBuilderSectionUsage', {
     after: (response) => {
       if (response) setUsageData(response);
       setIsLoading(false);
