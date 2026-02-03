@@ -1,0 +1,8 @@
+{
+  "servers": {
+    "remote-example": {
+      "command": "npx",
+      "args": ["mcp-remote", "https://docs.kentico.com/mcp"]
+    }
+  }
+}
