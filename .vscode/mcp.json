@@ -1,8 +1,8 @@
 {
   "servers": {
-    "remote-example": {
-      "command": "npx",
-      "args": ["mcp-remote", "https://docs.kentico.com/mcp"]
+    "kentico-docs-mcp": {
+      "type": "http",
+      "url": "https://docs.kentico.com/mcp"
     }
   }
 }
