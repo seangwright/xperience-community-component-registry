@@ -1,4 +1,4 @@
-# XperienceCommunity.ComponentRegistry
+# Xperience Community: Component Registry
 
 [![CI: Build and Test](https://github.com/seangwright/xperience-community-component-registry/actions/workflows/ci.yml/badge.svg)](https://github.com/seangwright/xperience-community-component-registry/actions/workflows/ci.yml)
 
