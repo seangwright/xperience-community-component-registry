@@ -30,6 +30,8 @@ This project enables administrators to view all registered custom components in 
 
   </div>
 
+Interested in how and why this library was created? Read the blog post [Dream and Experiment: Building a Component Registry Dashboard with AI](https://community.kentico.com/blog/dream-and-experiment-building-a-component-registry-dashboard-with-ai).
+
 ## Requirements
 
 ### Library Version Matrix
