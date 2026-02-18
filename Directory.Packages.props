@@ -11,6 +11,8 @@
     <PackageVersion Include="kentico.xperience.azurestorage" Version="31.1.1" />
     <PackageVersion Include="kentico.xperience.imageprocessing" Version="31.1.1" />
     <PackageVersion Include="kentico.xperience.mjml" Version="31.1.1" />
+    <PackageVersion Include="ModelContextProtocol" Version="0.8.0-preview.1" />
+    <PackageVersion Include="ModelContextProtocol.AspNetCore" Version="0.8.0-preview.1" />
     <PackageVersion Include="SonarAnalyzer.CSharp" Version="9.32.0.97167" />
 
     <PackageVersion Include="coverlet.collector" Version="6.0.4" />

@@ -1,4 +1,3 @@
-using Kentico.Builder.Web.Mvc;
 using Kentico.Xperience.Admin.Base;
 
 using XperienceCommunity.ComponentRegistry.Admin;
@@ -19,35 +18,17 @@ namespace XperienceCommunity.ComponentRegistry.Admin;
 /// </summary>
 [UIEvaluatePermission(ComponentRegistryPermissions.VIEW_FORM_BUILDER)]
 public class FormBuilderComponentViewerPage(
-    IComponentDefinitionStore<FormBuilderComponentDefinition> formComponentStore,
-    IComponentDefinitionStore<FormBuilderSectionDefinition> formSectionStore,
-    IAdminBuildersLocalizationService localizer,
+    IComponentRegistryReadService componentRegistryReadService,
     IComponentUsageService componentUsageService,
     IUIPermissionEvaluator permissionEvaluator) : Page<FormBuilderComponentViewerPageClientProperties>
 {
     public override async Task<FormBuilderComponentViewerPageClientProperties> ConfigureTemplateProperties(
         FormBuilderComponentViewerPageClientProperties properties)
     {
-        var formComponents = formComponentStore.GetAll()
-            .Select(c => new FormComponentDto(
-                c.Identifier,
-                localizer.LocalizeString(c.Name),
-                localizer.LocalizeString(c.Description),
-                c.IconClass,
-                c.MarkedType?.FullName))
-            .ToList();
+        var model = await componentRegistryReadService.GetFormBuilderRegistryAsync();
 
-        var formSections = formSectionStore.GetAll()
-            .Select(s => new FormSectionDto(
-                s.Identifier,
-                localizer.LocalizeString(s.Name),
-                localizer.LocalizeString(s.Description),
-                s.IconClass,
-                s.MarkedType?.FullName))
-            .ToList();
-
-        properties.FormComponents = formComponents;
-        properties.FormSections = formSections;
+        properties.FormComponents = model.FormComponents;
+        properties.FormSections = model.FormSections;
 
         // Evaluate permissions and propagate to client
         var canViewFormBuilderUsages = await permissionEvaluator.Evaluate(
@@ -97,23 +78,3 @@ public class FormBuilderComponentViewerPageClientProperties : TemplateClientProp
     public IEnumerable<FormSectionDto> FormSections { get; set; } = [];
     public bool CanViewFormBuilderUsages { get; set; }
 }
-
-/// <summary>
-/// Data transfer object for form builder component definitions.
-/// </summary>
-public record FormComponentDto(
-    string Identifier,
-    string Name,
-    string? Description,
-    string? IconClass,
-    string? MarkedTypeName);
-
-/// <summary>
-/// Data transfer object for form builder section definitions.
-/// </summary>
-public record FormSectionDto(
-    string Identifier,
-    string Name,
-    string? Description,
-    string? IconClass,
-    string? MarkedTypeName);

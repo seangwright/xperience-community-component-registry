@@ -12,6 +12,8 @@
 
   <ItemGroup>
     <PackageReference Include="Kentico.Xperience.Admin" />
+    <PackageReference Include="ModelContextProtocol" />
+    <PackageReference Include="ModelContextProtocol.AspNetCore" />
   </ItemGroup>
 
 </Project>

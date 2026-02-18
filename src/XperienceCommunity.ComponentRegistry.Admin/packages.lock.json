@@ -506,8 +506,8 @@
       },
       "Microsoft.Extensions.AI.Abstractions": {
         "type": "Transitive",
-        "resolved": "10.0.1",
-        "contentHash": "SR78I0BV7ljDovyVsZQqpt2NezdLoDtoIOCNwqAteuPc8f5PEmvDjokOQxKnTwXo/9RBKnmrzuPzbsuvueZcrg=="
+        "resolved": "10.2.0",
+        "contentHash": "ONGlIBht0ygEdKc0bCt9XWUiq19/460dAu7fCKzPM34OFJSMQIohEDTJwjCJ8vVp8znNakloc9xFF9+R/eDCYQ=="
       },
       "Microsoft.Extensions.AI.OpenAI": {
         "type": "Transitive",
@@ -676,6 +676,14 @@
           "System.Security.Cryptography.Pkcs": "8.0.1"
         }
       },
+      "ModelContextProtocol.Core": {
+        "type": "Transitive",
+        "resolved": "0.8.0-preview.1",
+        "contentHash": "BceTXxLV5d16gIJHiGvHPLlQARat3u53FuJv+sZfO+L7BGbdFwTbUJxUS0/gCpxmwd8GGnCjhT5Qdfw1+m9WJw==",
+        "dependencies": {
+          "Microsoft.Extensions.AI.Abstractions": "10.2.0"
+        }
+      },
       "Mono.Cecil": {
         "type": "Transitive",
         "resolved": "0.11.6",
@@ -768,7 +776,9 @@
       "xperiencecommunity.componentregistry": {
         "type": "Project",
         "dependencies": {
-          "Kentico.Xperience.Admin": "[31.1.1, )"
+          "Kentico.Xperience.Admin": "[31.1.1, )",
+          "ModelContextProtocol": "[0.8.0-preview.1, )",
+          "ModelContextProtocol.AspNetCore": "[0.8.0-preview.1, )"
         }
       },
       "Kentico.Xperience.WebApp": {
@@ -783,6 +793,24 @@
           "HtmlSanitizer": "9.0.889",
           "Kentico.Xperience.Core": "[31.1.1]",
           "Microsoft.Extensions.FileProviders.Embedded": "8.0.22"
+        }
+      },
+      "ModelContextProtocol": {
+        "type": "CentralTransitive",
+        "requested": "[0.8.0-preview.1, )",
+        "resolved": "0.8.0-preview.1",
+        "contentHash": "hDhRtuMa2XBI70X/aIyvDv8/b5HIlRGenMiAk5LkM/8dhBuYNYBpbCwCFF+D2l0g8wa24WddPA3ciI55Uc3+/A==",
+        "dependencies": {
+          "ModelContextProtocol.Core": "0.8.0-preview.1"
+        }
+      },
+      "ModelContextProtocol.AspNetCore": {
+        "type": "CentralTransitive",
+        "requested": "[0.8.0-preview.1, )",
+        "resolved": "0.8.0-preview.1",
+        "contentHash": "vtDaGXuZ4zLurH/63ymCDxKy3tIeJc5sLJV0nVtWBHj1gM9ME3jNKY1t+RrUQ9P22t4T1nHUEeBP0xR3J3YBgA==",
+        "dependencies": {
+          "ModelContextProtocol": "0.8.0-preview.1"
         }
       }
     }
