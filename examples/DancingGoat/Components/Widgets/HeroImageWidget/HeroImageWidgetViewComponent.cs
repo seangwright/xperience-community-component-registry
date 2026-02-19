@@ -1,7 +1,4 @@
-﻿using System.Linq;
-using System.Threading.Tasks;
-
-using DancingGoat.Models;
+﻿using DancingGoat.Models;
 using DancingGoat.Widgets;
 
 using Kentico.Content.Web.Mvc;
@@ -31,10 +28,8 @@ namespace DancingGoat.Widgets
         /// Creates an instance of <see cref="HeroImageWidgetViewComponent"/> class.
         /// </summary>
         /// <param name="contentRetriever">Content retriever.</param>
-        public HeroImageWidgetViewComponent(IContentRetriever contentRetriever)
-        {
+        public HeroImageWidgetViewComponent(IContentRetriever contentRetriever) =>
             this.contentRetriever = contentRetriever;
-        }
 
 
         public async Task<ViewViewComponentResult> InvokeAsync(HeroImageWidgetProperties properties)

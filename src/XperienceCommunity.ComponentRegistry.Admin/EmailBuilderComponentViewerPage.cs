@@ -1,6 +1,9 @@
 using Kentico.Xperience.Admin.Base;
+using Kentico.Xperience.Admin.DigitalMarketing.UIPages;
 
 using XperienceCommunity.ComponentRegistry.Admin;
+
+using InternalEmailBuilderTab = Kentico.Xperience.Admin.DigitalMarketing.UIPages.Internal.EmailBuilderTab;
 
 [assembly: UIPage(
     uiPageType: typeof(EmailBuilderComponentViewerPage),
@@ -18,6 +21,7 @@ namespace XperienceCommunity.ComponentRegistry.Admin;
 /// </summary>
 [UIEvaluatePermission(ComponentRegistryPermissions.VIEW_EMAIL_BUILDER)]
 public class EmailBuilderComponentViewerPage(
+    IPageLinkGenerator pageLinkGenerator,
     IComponentRegistryReadService componentRegistryReadService,
     IComponentUsageService componentUsageService,
     IUIPermissionEvaluator permissionEvaluator) : Page<EmailBuilderComponentViewerPageClientProperties>
@@ -46,6 +50,7 @@ public class EmailBuilderComponentViewerPage(
     public async Task<ICommandResponse> GetEmailBuilderWidgetUsage(ComponentDetailsParams @params)
     {
         var usage = await componentUsageService.GetEmailBuilderWidgetUsageAsync(@params.ComponentIdentifier);
+        AddAdminPaths(usage);
         return ResponseFrom(usage);
     }
 
@@ -56,7 +61,29 @@ public class EmailBuilderComponentViewerPage(
     public async Task<ICommandResponse> GetEmailBuilderTemplateUsage(ComponentDetailsParams @params)
     {
         var usage = await componentUsageService.GetEmailBuilderTemplateUsageAsync(@params.ComponentIdentifier);
+        AddAdminPaths(usage);
         return ResponseFrom(usage);
+    }
+
+    private void AddAdminPaths(EmailConfigurationUsageDetailDto usage)
+    {
+        foreach (var configuration in usage.EmailConfigurations)
+        {
+            foreach (var variant in configuration.Variants)
+            {
+                string adminPath = pageLinkGenerator.GetPath<InternalEmailBuilderTab>(
+                    new PageParameterValues()
+                    {
+                        { typeof(EmailEditLayout), configuration.EmailConfigurationId.ToString() },
+                        { typeof(EmailChannelContentLanguage), variant.LanguageName },
+                        { typeof(EmailChannelApplication), $"emails-{configuration.EmailChannelID}" },
+                    });
+
+                variant.AdminPath = adminPath.StartsWith('/')
+                    ? adminPath[1..]
+                    : adminPath;
+            }
+        }
     }
 }
 

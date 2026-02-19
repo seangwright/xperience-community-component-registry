@@ -83,6 +83,18 @@
       ]
     },
     {
+      "type": "shell",
+      "command": "npm",
+      "args": ["audit", "fix"],
+      "options": {
+        "cwd": "${workspaceFolder}/src/XperienceCommunity.ComponentRegistry.Admin/Client"
+      },
+      "group": "none",
+      "problemMatcher": [],
+      "label": "npm: audit fix - src/XperienceCommunity.ComponentRegistry.Admin/Client",
+      "detail": "fix npm vulnerabilities"
+    },
+    {
       "label": "dotnet: watch DancingGoat",
       "command": "dotnet",
       "type": "process",

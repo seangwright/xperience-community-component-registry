@@ -16,7 +16,7 @@ import {
   TableRow,
 } from './ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
-import { ChevronDown, Loader } from 'lucide-react';
+import { ChevronDown, Link, Loader } from 'lucide-react';
 import {
   FormComponentDto,
   FormComponentUsageDetailDto,
@@ -80,6 +80,57 @@ const FormComponentTableRow: React.FC<{
     }
     setExpanded(!expanded);
   };
+
+  const combinedForms = usageData
+    ? (() => {
+        const normalizeFormKey = (value: string) =>
+          value
+            .replace(/^BizForm\./i, '')
+            .trim()
+            .toLowerCase();
+
+        const formsByKey = new Map<
+          string,
+          {
+            key: string;
+            displayName: string;
+            codeName: string;
+            tableName?: string;
+            adminPath?: string;
+          }
+        >();
+
+        usageData.formClasses.forEach((formClass) => {
+          const codeName = formClass.className || formClass.classDisplayName;
+          const key = normalizeFormKey(codeName);
+
+          formsByKey.set(key, {
+            key,
+            displayName: formClass.classDisplayName,
+            codeName,
+            tableName: formClass.classTableName,
+          });
+        });
+
+        usageData.formBuilderForms.forEach((form) => {
+          const codeName = form.formName || form.formDisplayName;
+          const key = normalizeFormKey(codeName);
+          const existing = formsByKey.get(key);
+
+          formsByKey.set(key, {
+            key,
+            displayName: existing?.displayName || form.formDisplayName,
+            codeName: existing?.codeName || codeName,
+            tableName: existing?.tableName,
+            adminPath: form.adminPath || existing?.adminPath,
+          });
+        });
+
+        return Array.from(formsByKey.values()).sort((a, b) =>
+          a.displayName.localeCompare(b.displayName),
+        );
+      })()
+    : [];
 
   return (
     <>
@@ -198,126 +249,79 @@ const FormComponentTableRow: React.FC<{
                   </h5>
                   {usageData ? (
                     <div className="space-y-6">
-                      {usageData.componentType === 'Component' ? (
-                        // Show form classes only for components
-                        <div>
-                          <h6 className="text-sm font-medium text-slate-600 mb-3">
-                            Legacy Form Classes
-                          </h6>
-                          <div className="space-y-3">
-                            <div className="grid grid-cols-2 gap-4 text-sm">
-                              <div className="bg-blue-50 p-3 rounded">
-                                <div className="text-xs text-blue-700 font-medium">
-                                  Total Form Classes
-                                </div>
-                                <div className="text-xl font-bold text-blue-900">
-                                  {usageData.totalFormClassesUsing}
-                                </div>
+                      <div>
+                        <h6 className="text-sm font-medium text-slate-600 mb-3">
+                          Form Builder
+                        </h6>
+                        <div className="space-y-3">
+                          <div className="grid grid-cols-2 gap-4 text-sm">
+                            <div className="bg-blue-50 p-3 rounded">
+                              <div className="text-xs text-blue-700 font-medium">
+                                Total Forms
                               </div>
-                              <div className="bg-slate-100 p-3 rounded">
-                                <div className="text-xs text-slate-700 font-medium">
-                                  Last Updated
-                                </div>
-                                <div className="text-sm text-slate-600">
-                                  {usageData.lastModified
-                                    ? new Date(
-                                        usageData.lastModified,
-                                      ).toLocaleDateString()
-                                    : 'N/A'}
-                                </div>
+                              <div className="text-xl font-bold text-blue-900">
+                                {combinedForms.length}
                               </div>
                             </div>
-
-                            {usageData.formClasses.length > 0 ? (
-                              <div className="mt-4">
-                                <div className="text-xs font-medium text-slate-700 mb-2">
-                                  Form Classes:
-                                </div>
-                                <div className="space-y-2 max-h-64 overflow-y-auto">
-                                  {usageData.formClasses.map((formClass) => (
-                                    <div
-                                      key={formClass.classId}
-                                      className="p-3 bg-slate-50 rounded border border-slate-200 text-xs"
-                                    >
-                                      <div className="font-medium text-slate-900 mb-1">
-                                        {formClass.classDisplayName}
-                                      </div>
-                                      <div className="font-mono text-slate-600 text-xs mb-1">
-                                        {formClass.className}
-                                      </div>
-                                      <div className="text-slate-500 text-xs">
-                                        Table: {formClass.classTableName}
-                                      </div>
-                                    </div>
-                                  ))}
-                                </div>
+                            <div className="bg-slate-100 p-3 rounded">
+                              <div className="text-xs text-slate-700 font-medium">
+                                Last Updated
                               </div>
-                            ) : (
-                              <div className="p-3 bg-yellow-50 rounded text-sm text-yellow-700">
-                                No legacy form classes use this component
+                              <div className="text-sm text-slate-600">
+                                {usageData.lastModified
+                                  ? new Date(
+                                      usageData.lastModified,
+                                    ).toLocaleDateString()
+                                  : 'N/A'}
                               </div>
-                            )}
+                            </div>
                           </div>
-                        </div>
-                      ) : (
-                        // Show form builder forms only for sections
-                        <div>
-                          <h6 className="text-sm font-medium text-slate-600 mb-3">
-                            Form Builder Forms
-                          </h6>
-                          <div className="space-y-3">
-                            <div className="grid grid-cols-2 gap-4 text-sm">
-                              <div className="bg-green-50 p-3 rounded">
-                                <div className="text-xs text-green-700 font-medium">
-                                  Total Form Builder Forms
-                                </div>
-                                <div className="text-xl font-bold text-green-900">
-                                  {usageData.totalFormBuilderFormsUsing}
-                                </div>
-                              </div>
-                              <div className="bg-slate-100 p-3 rounded">
-                                <div className="text-xs text-slate-700 font-medium">
-                                  Last Updated
-                                </div>
-                                <div className="text-sm text-slate-600">
-                                  {usageData.lastModified
-                                    ? new Date(
-                                        usageData.lastModified,
-                                      ).toLocaleDateString()
-                                    : 'N/A'}
-                                </div>
-                              </div>
-                            </div>
 
-                            {usageData.formBuilderForms.length > 0 ? (
-                              <div className="mt-4">
-                                <div className="text-xs font-medium text-slate-700 mb-2">
-                                  Forms:
-                                </div>
-                                <div className="space-y-2 max-h-64 overflow-y-auto">
-                                  {usageData.formBuilderForms.map((form) => (
-                                    <div
-                                      key={form.formID}
-                                      className="p-3 bg-slate-50 rounded border border-slate-200 text-xs"
-                                    >
+                          {combinedForms.length > 0 ? (
+                            <div className="mt-4">
+                              <div className="text-xs font-medium text-slate-700 mb-2">
+                                Forms:
+                              </div>
+                              <div className="space-y-2 max-h-64 overflow-y-auto pr-3">
+                                {combinedForms.map((form) => (
+                                  <div
+                                    key={form.key}
+                                    className="p-3 bg-slate-50 rounded border border-slate-200 text-xs flex items-center justify-between gap-3"
+                                  >
+                                    <div className="min-w-0 flex-1">
                                       <div className="font-medium text-slate-900 mb-1">
-                                        {form.formDisplayName}
+                                        {form.displayName}
                                       </div>
                                       <div className="font-mono text-slate-600 text-xs">
-                                        {form.formName}
+                                        {form.codeName}
                                       </div>
+                                      {form.tableName && (
+                                        <div className="text-slate-500 text-xs mt-1">
+                                          Table: {form.tableName}
+                                        </div>
+                                      )}
                                     </div>
-                                  ))}
-                                </div>
+                                    {form.adminPath ? (
+                                      <a
+                                        href={form.adminPath}
+                                        title="Open form in Form Builder"
+                                        aria-label="Open form in Form Builder"
+                                        className="text-blue-700 hover:text-blue-900 flex-shrink-0 mr-2"
+                                      >
+                                        <Link size={20} />
+                                      </a>
+                                    ) : null}
+                                  </div>
+                                ))}
                               </div>
-                            ) : (
-                              <div className="p-3 bg-yellow-50 rounded text-sm text-yellow-700">
-                                No form builder forms use this section
-                              </div>
-                            )}
-                          </div>
+                            </div>
+                          ) : (
+                            <div className="p-3 bg-yellow-50 rounded text-sm text-yellow-700">
+                              No forms use this item
+                            </div>
+                          )}
                         </div>
-                      )}
+                      </div>
                     </div>
                   ) : (
                     <div className="text-slate-500 italic">
@@ -337,8 +341,22 @@ const FormComponentTableRow: React.FC<{
 export const FormBuilderComponentViewerTemplate = (
   props: FormBuilderComponentViewerClientProperties,
 ) => {
+  const [componentFilter, setComponentFilter] = useState('');
+  const [sectionFilter, setSectionFilter] = useState('');
+
   const totalComponents =
     props.formComponents.length + props.formSections.length;
+
+  const filteredFormComponents = props.formComponents.filter((component) =>
+    component.identifier
+      .toLowerCase()
+      .includes(componentFilter.trim().toLowerCase()),
+  );
+  const filteredFormSections = props.formSections.filter((section) =>
+    section.identifier
+      .toLowerCase()
+      .includes(sectionFilter.trim().toLowerCase()),
+  );
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-8">
@@ -425,42 +443,59 @@ export const FormBuilderComponentViewerTemplate = (
               </CardHeader>
               <CardContent className="pt-6">
                 {props.formComponents.length > 0 ? (
-                  <div className="rounded-lg border">
-                    <Table>
-                      <TableHeader>
-                        <TableRow className="bg-slate-50">
-                          <TableHead className="w-10"></TableHead>
-                          <TableHead className="font-semibold !text-slate-700">
-                            Identifier
-                          </TableHead>
-                          <TableHead className="font-semibold !text-slate-700">
-                            Name
-                          </TableHead>
-                          <TableHead className="font-semibold !text-slate-700">
-                            Description
-                          </TableHead>
-                          <TableHead className="font-semibold !text-slate-700">
-                            Icon
-                          </TableHead>
-                          <TableHead className="font-semibold !text-slate-700">
-                            Component Type
-                          </TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {props.formComponents.map((component) => (
-                          <FormComponentTableRow
-                            key={component.identifier}
-                            component={component}
-                            componentType="component"
-                            canViewFormBuilderUsages={
-                              props.canViewFormBuilderUsages
-                            }
-                          />
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </div>
+                  <>
+                    <div className="mb-4">
+                      <input
+                        type="text"
+                        placeholder="Filter by identifier..."
+                        value={componentFilter}
+                        onChange={(e) => setComponentFilter(e.target.value)}
+                        className="w-full px-3 py-2 text-sm text-slate-900 bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent placeholder-slate-500"
+                      />
+                    </div>
+                    {filteredFormComponents.length > 0 ? (
+                      <div className="rounded-lg border">
+                        <Table>
+                          <TableHeader>
+                            <TableRow className="bg-slate-50">
+                              <TableHead className="w-10"></TableHead>
+                              <TableHead className="font-semibold !text-slate-700">
+                                Identifier
+                              </TableHead>
+                              <TableHead className="font-semibold !text-slate-700">
+                                Name
+                              </TableHead>
+                              <TableHead className="font-semibold !text-slate-700">
+                                Description
+                              </TableHead>
+                              <TableHead className="font-semibold !text-slate-700">
+                                Icon
+                              </TableHead>
+                              <TableHead className="font-semibold !text-slate-700">
+                                Component Type
+                              </TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {filteredFormComponents.map((component) => (
+                              <FormComponentTableRow
+                                key={component.identifier}
+                                component={component}
+                                componentType="component"
+                                canViewFormBuilderUsages={
+                                  props.canViewFormBuilderUsages
+                                }
+                              />
+                            ))}
+                          </TableBody>
+                        </Table>
+                      </div>
+                    ) : (
+                      <div className="text-center py-8 text-slate-500">
+                        <p>No components match this identifier filter</p>
+                      </div>
+                    )}
+                  </>
                 ) : (
                   <div className="text-center py-12 text-slate-500">
                     <p className="text-lg">No form components registered</p>
@@ -482,42 +517,59 @@ export const FormBuilderComponentViewerTemplate = (
               </CardHeader>
               <CardContent className="pt-6">
                 {props.formSections.length > 0 ? (
-                  <div className="rounded-lg border">
-                    <Table>
-                      <TableHeader>
-                        <TableRow className="bg-slate-50">
-                          <TableHead className="w-10"></TableHead>
-                          <TableHead className="font-semibold !text-slate-700">
-                            Identifier
-                          </TableHead>
-                          <TableHead className="font-semibold !text-slate-700">
-                            Name
-                          </TableHead>
-                          <TableHead className="font-semibold !text-slate-700">
-                            Description
-                          </TableHead>
-                          <TableHead className="font-semibold !text-slate-700">
-                            Icon
-                          </TableHead>
-                          <TableHead className="font-semibold !text-slate-700">
-                            Component Type
-                          </TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {props.formSections.map((section) => (
-                          <FormComponentTableRow
-                            key={section.identifier}
-                            component={section}
-                            componentType="section"
-                            canViewFormBuilderUsages={
-                              props.canViewFormBuilderUsages
-                            }
-                          />
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </div>
+                  <>
+                    <div className="mb-4">
+                      <input
+                        type="text"
+                        placeholder="Filter by identifier..."
+                        value={sectionFilter}
+                        onChange={(e) => setSectionFilter(e.target.value)}
+                        className="w-full px-3 py-2 text-sm text-slate-900 bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent placeholder-slate-500"
+                      />
+                    </div>
+                    {filteredFormSections.length > 0 ? (
+                      <div className="rounded-lg border">
+                        <Table>
+                          <TableHeader>
+                            <TableRow className="bg-slate-50">
+                              <TableHead className="w-10"></TableHead>
+                              <TableHead className="font-semibold !text-slate-700">
+                                Identifier
+                              </TableHead>
+                              <TableHead className="font-semibold !text-slate-700">
+                                Name
+                              </TableHead>
+                              <TableHead className="font-semibold !text-slate-700">
+                                Description
+                              </TableHead>
+                              <TableHead className="font-semibold !text-slate-700">
+                                Icon
+                              </TableHead>
+                              <TableHead className="font-semibold !text-slate-700">
+                                Component Type
+                              </TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {filteredFormSections.map((section) => (
+                              <FormComponentTableRow
+                                key={section.identifier}
+                                component={section}
+                                componentType="section"
+                                canViewFormBuilderUsages={
+                                  props.canViewFormBuilderUsages
+                                }
+                              />
+                            ))}
+                          </TableBody>
+                        </Table>
+                      </div>
+                    ) : (
+                      <div className="text-center py-8 text-slate-500">
+                        <p>No components match this identifier filter</p>
+                      </div>
+                    )}
+                  </>
                 ) : (
                   <div className="text-center py-12 text-slate-500">
                     <p className="text-lg">No form sections registered</p>

@@ -95,7 +95,25 @@ Then map the endpoint in `Program.cs`:
 app.MapComponentRegistryMcp(app.Configuration);
 ```
 
-For initial setup, prefer enabling MCP only in development and protect endpoint access at network/app-auth level.
+Configure your project's MCP servers using your AI development tool of choice.
+
+Example: VS Code and GitHub Copilot `.vscode/mcp.json`
+
+```json
+{
+  "servers": {
+    "kentico-docs-mcp": {
+      "type": "http",
+      "url": "https://docs.kentico.com/mcp"
+    },
+
+    "xperience-component-registry": {
+      "type": "http",
+      "url": "http://localhost:53856/mcp/component-registry"
+    }
+  }
+}
+```
 
 ## Full Instructions
 

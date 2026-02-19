@@ -146,6 +146,7 @@ public class ComponentUsageService(ILogger<ComponentUsageService> logger) : ICom
                     WPI.WebPageItemID,
                     WPI.WebPageItemName,
                     WPI.WebPageItemTreePath,
+                    WPI.WebPageItemWebsiteChannelID,
                     C.ChannelDisplayName,
                     CI.ContentItemID,
                     CL.ContentLanguageID,
@@ -187,6 +188,7 @@ public class ComponentUsageService(ILogger<ComponentUsageService> logger) : ICom
                     string pageName = reader.GetString(reader.GetOrdinal("WebPageItemName"));
                     string pagePath = reader.GetString(reader.GetOrdinal("WebPageItemTreePath"));
                     string channelDisplayName = reader.GetString(reader.GetOrdinal("ChannelDisplayName"));
+                    int websiteChannelID = reader.GetInt32(reader.GetOrdinal("WebPageItemWebsiteChannelID"));
                     int contentItemId = reader.GetInt32(reader.GetOrdinal("ContentItemID"));
                     string languageName = reader.GetString(reader.GetOrdinal("ContentLanguageName"));
                     int commonDataId = reader.GetInt32(reader.GetOrdinal("ContentItemCommonDataID"));
@@ -216,6 +218,7 @@ public class ComponentUsageService(ILogger<ComponentUsageService> logger) : ICom
                             ContentItemId = contentItemId,
                             PageName = pageName,
                             PagePath = pagePath,
+                            WebsiteChannelID = websiteChannelID,
                             ChannelDisplayName = channelDisplayName,
                             CreatedAt = DateTime.UtcNow,
                             Variants = []
@@ -313,6 +316,7 @@ public class ComponentUsageService(ILogger<ComponentUsageService> logger) : ICom
                     int emailConfigurationId = reader.GetInt32(reader.GetOrdinal("EmailConfigurationID"));
                     string configurationName = reader.GetString(reader.GetOrdinal("EmailConfigurationName"));
                     string configurationPurpose = reader.GetString(reader.GetOrdinal("EmailConfigurationPurpose"));
+                    int emailChannelID = reader.GetInt32(reader.GetOrdinal("EmailConfigurationEmailChannelID"));
                     string channelDisplayName = reader.GetString(reader.GetOrdinal("ChannelDisplayName"));
                     int contentItemId = reader.GetInt32(reader.GetOrdinal("ContentItemID"));
                     string languageName = reader.GetString(reader.GetOrdinal("ContentLanguageName"));
@@ -343,6 +347,7 @@ public class ComponentUsageService(ILogger<ComponentUsageService> logger) : ICom
                             ContentItemId = contentItemId,
                             ConfigurationName = configurationName,
                             ConfigurationPurpose = configurationPurpose,
+                            EmailChannelID = emailChannelID,
                             ChannelDisplayName = channelDisplayName,
                             CreatedAt = DateTime.UtcNow,
                             Variants = []
@@ -378,8 +383,8 @@ public class ComponentUsageService(ILogger<ComponentUsageService> logger) : ICom
 
     /// <summary>
     /// Retrieves form component or section usage by querying the CMS_Class and CMS_Form tables.
-    /// For components: searches CMS_Class.ClassFormDefinition for XML-based form definitions.
-    /// For sections: searches CMS_Form.FormBuilderLayout for JSON-based form builder configurations.
+    /// For components: queries CMS_Class.ClassFormDefinition for matching component identifiers, then correlates matching field GUIDs to CMS_Form.FormBuilderLayout.
+    /// For sections: queries CMS_Form.FormBuilderLayout for matching section identifiers, then correlates matching field GUIDs to CMS_Class.ClassFormDefinition.
     /// </summary>
     private async Task<FormComponentUsageDetailDto> GetFormComponentUsage(
         string componentIdentifier,
@@ -396,46 +401,177 @@ public class ComponentUsageService(ILogger<ComponentUsageService> logger) : ICom
 
         try
         {
-            // Query for old-style form classes (CMS_Class with XML-based ClassFormDefinition)
-            string classQuery = @"
-                SELECT
-                    C.ClassID,
-                    C.ClassDisplayName,
-                    C.ClassName,
-                    C.ClassXmlSchema,
-                    C.ClassFormDefinition,
-                    C.ClassTableName
-                FROM CMS_Class C
-                WHERE C.ClassType = 'Form'
-                    AND C.ClassFormDefinition LIKE @componentId ESCAPE '\'
-                ORDER BY C.ClassDisplayName";
+            string classQuery;
+            string formQuery;
+            QueryDataParameters queryDataParameters;
 
-            var classDataParameters = new QueryDataParameters
+            if (isSection)
             {
-                { "@componentId", $"%<componentidentifier>{EscapeForLike(componentIdentifier)}</componentidentifier>%" }
-            };
-            var classParameters = new QueryParameters(classQuery, classDataParameters, QueryTypeEnum.SQLQuery);
+                classQuery = @"
+                    ;WITH SectionFieldGuids AS (
+                        SELECT DISTINCT
+                            JSON_VALUE(fc.value, '$.identifier') AS FieldGuid
+                        FROM CMS_Form F
+                        CROSS APPLY OPENJSON(F.FormBuilderLayout, '$.editableAreas') ea
+                        CROSS APPLY OPENJSON(ea.value, '$.sections') s
+                        CROSS APPLY OPENJSON(s.value, '$.zones') z
+                        CROSS APPLY OPENJSON(z.value, '$.formComponents') fc
+                        WHERE JSON_VALUE(s.value, '$.type') = @sectionIdentifier
+                    ),
+                    ClassFields AS (
+                        SELECT
+                            C.ClassID,
+                            C.ClassDisplayName,
+                            C.ClassName,
+                            C.ClassXmlSchema,
+                            C.ClassFormDefinition,
+                            C.ClassTableName,
+                            C.ClassLastModified,
+                            ClassField.value('@guid', 'nvarchar(36)') AS FieldGuid
+                        FROM CMS_Class C
+                        CROSS APPLY (SELECT TRY_CAST(C.ClassFormDefinition AS xml) AS ClassFormDefinitionXml) AS ParsedClass
+                        CROSS APPLY ParsedClass.ClassFormDefinitionXml.nodes('/form/field') AS X(ClassField)
+                        WHERE C.ClassType = 'Form'
+                    )
+                    SELECT DISTINCT
+                        CF.ClassID,
+                        CF.ClassDisplayName,
+                        CF.ClassName,
+                        CF.ClassXmlSchema,
+                        CF.ClassFormDefinition,
+                        CF.ClassTableName,
+                        CF.ClassLastModified
+                    FROM ClassFields CF
+                    INNER JOIN SectionFieldGuids SFG ON SFG.FieldGuid = CF.FieldGuid
+                    ORDER BY CF.ClassDisplayName";
 
-            using (var connection = ConnectionHelper.GetConnection())
-            {
-                var reader = await connection.ExecuteReaderAsync(classParameters, CommandBehavior.Default, cancellationToken);
-                if (reader is not null)
+                formQuery = @"
+                    ;WITH SectionForms AS (
+                        SELECT DISTINCT
+                            F.FormID,
+                            F.FormName,
+                            F.FormDisplayName,
+                            F.FormBuilderLayout,
+                            F.FormLastModified
+                        FROM CMS_Form F
+                        CROSS APPLY OPENJSON(F.FormBuilderLayout, '$.editableAreas') ea
+                        CROSS APPLY OPENJSON(ea.value, '$.sections') s
+                        WHERE JSON_VALUE(s.value, '$.type') = @sectionIdentifier
+                    )
+                    SELECT
+                        SF.FormID,
+                        SF.FormName,
+                        SF.FormDisplayName,
+                        SF.FormBuilderLayout,
+                        SF.FormLastModified
+                    FROM SectionForms SF
+                    ORDER BY SF.FormDisplayName";
+
+                queryDataParameters = new QueryDataParameters
                 {
-                    DateTime? lastModified = null;
+                    { "@sectionIdentifier", componentIdentifier }
+                };
+            }
+            else
+            {
+                classQuery = @"
+                    ;WITH ComponentClassFields AS (
+                        SELECT
+                            C.ClassID,
+                            C.ClassDisplayName,
+                            C.ClassName,
+                            C.ClassXmlSchema,
+                            C.ClassFormDefinition,
+                            C.ClassTableName,
+                            C.ClassLastModified,
+                            ClassField.value('@guid', 'nvarchar(36)') AS FieldGuid
+                        FROM CMS_Class C
+                        CROSS APPLY (SELECT TRY_CAST(C.ClassFormDefinition AS xml) AS ClassFormDefinitionXml) AS ParsedClass
+                        CROSS APPLY ParsedClass.ClassFormDefinitionXml.nodes('/form/field') AS X(ClassField)
+                        WHERE C.ClassType = 'Form'
+                            AND ClassField.value('(settings/componentidentifier/text())[1]', 'nvarchar(200)') = @componentIdentifier
+                    )
+                    SELECT DISTINCT
+                        CCF.ClassID,
+                        CCF.ClassDisplayName,
+                        CCF.ClassName,
+                        CCF.ClassXmlSchema,
+                        CCF.ClassFormDefinition,
+                        CCF.ClassTableName,
+                        CCF.ClassLastModified
+                    FROM ComponentClassFields CCF
+                    ORDER BY CCF.ClassDisplayName";
+
+                formQuery = @"
+                    ;WITH ComponentClassFields AS (
+                        SELECT
+                            ClassField.value('@guid', 'nvarchar(36)') AS FieldGuid
+                        FROM CMS_Class C
+                        CROSS APPLY (SELECT TRY_CAST(C.ClassFormDefinition AS xml) AS ClassFormDefinitionXml) AS ParsedClass
+                        CROSS APPLY ParsedClass.ClassFormDefinitionXml.nodes('/form/field') AS X(ClassField)
+                        WHERE C.ClassType = 'Form'
+                            AND ClassField.value('(settings/componentidentifier/text())[1]', 'nvarchar(200)') = @componentIdentifier
+                    ),
+                    FormFields AS (
+                        SELECT
+                            F.FormID,
+                            F.FormName,
+                            F.FormDisplayName,
+                            F.FormBuilderLayout,
+                            F.FormLastModified,
+                            JSON_VALUE(fc.value, '$.identifier') AS FieldGuid
+                        FROM CMS_Form F
+                        CROSS APPLY OPENJSON(F.FormBuilderLayout, '$.editableAreas') ea
+                        CROSS APPLY OPENJSON(ea.value, '$.sections') s
+                        CROSS APPLY OPENJSON(s.value, '$.zones') z
+                        CROSS APPLY OPENJSON(z.value, '$.formComponents') fc
+                    )
+                    SELECT DISTINCT
+                        FF.FormID,
+                        FF.FormName,
+                        FF.FormDisplayName,
+                        FF.FormBuilderLayout,
+                        FF.FormLastModified
+                    FROM FormFields FF
+                    INNER JOIN ComponentClassFields CCF ON CCF.FieldGuid = FF.FieldGuid
+                    ORDER BY FF.FormDisplayName";
+
+                queryDataParameters = new QueryDataParameters
+                {
+                    { "@componentIdentifier", componentIdentifier }
+                };
+            }
+
+            var classParameters = new QueryParameters(classQuery, queryDataParameters, QueryTypeEnum.SQLQuery);
+            var formParameters = new QueryParameters(formQuery, queryDataParameters, QueryTypeEnum.SQLQuery);
+
+            DateTime? latestClassModified = null;
+            DateTime? latestFormModified = null;
+
+            using (var classConnection = ConnectionHelper.GetConnection())
+            {
+                var classReader = await classConnection.ExecuteReaderAsync(classParameters, CommandBehavior.Default, cancellationToken);
+                if (classReader is not null)
+                {
                     var formClasses = new List<FormClassUsageDto>();
 
-                    while (await reader.ReadAsync(cancellationToken))
+                    while (await classReader.ReadAsync(cancellationToken))
                     {
-                        int classId = reader.GetInt32(reader.GetOrdinal("ClassID"));
-                        string classDisplayName = reader.GetString(reader.GetOrdinal("ClassDisplayName"));
-                        string className = reader.GetString(reader.GetOrdinal("ClassName"));
-                        string classXmlSchema = reader.GetString(reader.GetOrdinal("ClassXmlSchema"));
-                        string classFormDefinition = reader.GetString(reader.GetOrdinal("ClassFormDefinition"));
-                        string classTableName = reader.GetString(reader.GetOrdinal("ClassTableName"));
+                        int classId = classReader.GetInt32(classReader.GetOrdinal("ClassID"));
+                        string classDisplayName = classReader.GetString(classReader.GetOrdinal("ClassDisplayName"));
+                        string className = classReader.GetString(classReader.GetOrdinal("ClassName"));
+                        string classXmlSchema = classReader.GetString(classReader.GetOrdinal("ClassXmlSchema"));
+                        string classFormDefinition = classReader.GetString(classReader.GetOrdinal("ClassFormDefinition"));
+                        string classTableName = classReader.GetString(classReader.GetOrdinal("ClassTableName"));
+                        int classLastModifiedOrdinal = classReader.GetOrdinal("ClassLastModified");
+                        DateTime? classLastModified = !await classReader.IsDBNullAsync(classLastModifiedOrdinal, cancellationToken)
+                            ? classReader.GetDateTime(classLastModifiedOrdinal)
+                            : null;
 
-                        if (lastModified == null)
+                        if (classLastModified is not null &&
+                            (latestClassModified is null || classLastModified > latestClassModified))
                         {
-                            lastModified = DateTime.UtcNow;
+                            latestClassModified = classLastModified;
                         }
 
                         formClasses.Add(new FormClassUsageDto
@@ -450,41 +586,35 @@ public class ComponentUsageService(ILogger<ComponentUsageService> logger) : ICom
                     }
 
                     result.FormClasses = formClasses.OrderBy(fc => fc.ClassDisplayName).ToList();
-                    result.LastModified = lastModified;
                 }
             }
 
-            // Query for form builder forms (CMS_Form with JSON-based FormBuilderLayout)
-            if (isSection)
+            using (var formConnection = ConnectionHelper.GetConnection())
             {
-                string formQuery = @"
-                    SELECT
-                        F.FormID,
-                        F.FormName,
-                        F.FormDisplayName,
-                        F.FormBuilderLayout
-                    FROM CMS_Form F
-                    WHERE F.FormBuilderLayout LIKE @sectionType ESCAPE '\'
-                    ORDER BY F.FormDisplayName";
-
-                var formDataParameters = new QueryDataParameters
-                {
-                    { "@sectionType", $"%\"type\": \"{EscapeForLike(componentIdentifier)}\"%"}
-                };
-                var formParameters = new QueryParameters(formQuery, formDataParameters, QueryTypeEnum.SQLQuery);
-
-                using var connection = ConnectionHelper.GetConnection();
-                var reader = await connection.ExecuteReaderAsync(formParameters, CommandBehavior.Default, cancellationToken);
-                if (reader is not null)
+                var formReader = await formConnection.ExecuteReaderAsync(formParameters, CommandBehavior.Default, cancellationToken);
+                if (formReader is not null)
                 {
                     var formBuilderForms = new List<FormBuilderFormUsageDto>();
 
-                    while (await reader.ReadAsync(cancellationToken))
+                    while (await formReader.ReadAsync(cancellationToken))
                     {
-                        int formId = reader.GetInt32(reader.GetOrdinal("FormID"));
-                        string formName = reader.GetString(reader.GetOrdinal("FormName"));
-                        string formDisplayName = reader.GetString(reader.GetOrdinal("FormDisplayName"));
-                        string formBuilderLayout = reader.GetString(reader.GetOrdinal("FormBuilderLayout"));
+                        int formId = formReader.GetInt32(formReader.GetOrdinal("FormID"));
+                        string formName = formReader.GetString(formReader.GetOrdinal("FormName"));
+                        string formDisplayName = formReader.GetString(formReader.GetOrdinal("FormDisplayName"));
+                        int formBuilderLayoutOrdinal = formReader.GetOrdinal("FormBuilderLayout");
+                        string formBuilderLayout = !await formReader.IsDBNullAsync(formBuilderLayoutOrdinal, cancellationToken)
+                            ? formReader.GetString(formBuilderLayoutOrdinal)
+                            : string.Empty;
+                        int formLastModifiedOrdinal = formReader.GetOrdinal("FormLastModified");
+                        DateTime? formLastModified = !await formReader.IsDBNullAsync(formLastModifiedOrdinal, cancellationToken)
+                            ? formReader.GetDateTime(formLastModifiedOrdinal)
+                            : null;
+
+                        if (formLastModified is not null &&
+                            (latestFormModified is null || formLastModified > latestFormModified))
+                        {
+                            latestFormModified = formLastModified;
+                        }
 
                         formBuilderForms.Add(new FormBuilderFormUsageDto
                         {
@@ -493,15 +623,17 @@ public class ComponentUsageService(ILogger<ComponentUsageService> logger) : ICom
                             FormDisplayName = formDisplayName,
                             FormBuilderLayout = formBuilderLayout
                         });
-
-                        if (result.LastModified == null)
-                        {
-                            result.LastModified = DateTime.UtcNow;
-                        }
                     }
 
                     result.FormBuilderForms = formBuilderForms;
                 }
+            }
+
+            if (latestClassModified is not null || latestFormModified is not null)
+            {
+                result.LastModified = new[] { latestClassModified, latestFormModified }
+                    .Where(d => d.HasValue)
+                    .Max();
             }
 
             result.TotalFormClassesUsing = result.FormClasses.Count;
@@ -588,6 +720,11 @@ public class PageUsageDto
     public string PagePath { get; set; } = string.Empty;
 
     /// <summary>
+    /// The id of the website channel this page belongs to.
+    /// </summary>
+    public int WebsiteChannelID { get; set; }
+
+    /// <summary>
     /// The display name of the channel this page belongs to.
     /// </summary>
     public string ChannelDisplayName { get; set; } = string.Empty;
@@ -644,6 +781,11 @@ public class PageVariantDto
     /// Whether this language variant is published.
     /// </summary>
     public bool IsPublished { get; set; }
+
+    /// <summary>
+    /// The administration UI path for this page variant.
+    /// </summary>
+    public string? AdminPath { get; set; }
 }
 
 /// <summary>
@@ -711,6 +853,11 @@ public class EmailConfigurationUsageDto
     public string ConfigurationPurpose { get; set; } = string.Empty;
 
     /// <summary>
+    /// The id of the email channel this email configuration belongs to.
+    /// </summary>
+    public int EmailChannelID { get; set; }
+
+    /// <summary>
     /// The display name of the channel this email configuration belongs to.
     /// </summary>
     public string ChannelDisplayName { get; set; } = string.Empty;
@@ -767,6 +914,11 @@ public class EmailConfigurationVariantDto
     /// Whether this language variant is published.
     /// </summary>
     public bool IsPublished { get; set; }
+
+    /// <summary>
+    /// The administration UI path for this email configuration variant.
+    /// </summary>
+    public string? AdminPath { get; set; }
 }
 
 /// <summary>
@@ -869,4 +1021,9 @@ public class FormBuilderFormUsageDto
     /// The complete JSON form builder layout configuration.
     /// </summary>
     public string FormBuilderLayout { get; set; } = string.Empty;
+
+    /// <summary>
+    /// The administration UI path for this form.
+    /// </summary>
+    public string? AdminPath { get; set; }
 }

@@ -5,6 +5,7 @@ export interface PageVariantDto {
   configurationJson: string;
   configurationType: string;
   isPublished?: boolean;
+  adminPath?: string;
 }
 
 export interface PageUsageDto {
@@ -69,6 +70,7 @@ export interface EmailConfigurationVariantDto {
   configurationJson: string;
   configurationType: string;
   isPublished?: boolean;
+  adminPath?: string;
 }
 
 export interface EmailConfigurationUsageDto {
@@ -121,6 +123,7 @@ export interface FormBuilderFormUsageDto {
   formName: string;
   formDisplayName: string;
   formBuilderLayout: string;
+  adminPath?: string;
 }
 
 export interface FormComponentUsageDetailDto {

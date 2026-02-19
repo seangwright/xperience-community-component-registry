@@ -1,4 +1,5 @@
 using Kentico.Xperience.Admin.Base;
+using Kentico.Xperience.Admin.DigitalMarketing.UIPages;
 
 using XperienceCommunity.ComponentRegistry.Admin;
 
@@ -18,6 +19,7 @@ namespace XperienceCommunity.ComponentRegistry.Admin;
 /// </summary>
 [UIEvaluatePermission(ComponentRegistryPermissions.VIEW_FORM_BUILDER)]
 public class FormBuilderComponentViewerPage(
+    IPageLinkGenerator pageLinkGenerator,
     IComponentRegistryReadService componentRegistryReadService,
     IComponentUsageService componentUsageService,
     IUIPermissionEvaluator permissionEvaluator) : Page<FormBuilderComponentViewerPageClientProperties>
@@ -50,6 +52,8 @@ public class FormBuilderComponentViewerPage(
         var usage = await componentUsageService.GetFormBuilderComponentUsageAsync(
             @params.ComponentIdentifier);
 
+        AddAdminPaths(usage);
+
         return ResponseFrom(usage);
     }
 
@@ -65,7 +69,25 @@ public class FormBuilderComponentViewerPage(
         var usage = await componentUsageService.GetFormBuilderSectionUsageAsync(
             @params.ComponentIdentifier);
 
+        AddAdminPaths(usage);
+
         return ResponseFrom(usage);
+    }
+
+    private void AddAdminPaths(FormComponentUsageDetailDto usage)
+    {
+        foreach (var form in usage.FormBuilderForms)
+        {
+            string adminPath = pageLinkGenerator.GetPath<FormBuilderTab>(
+                new PageParameterValues()
+                {
+                    { typeof(FormEditSection), form.FormID.ToString() },
+                });
+
+            form.AdminPath = adminPath.StartsWith('/')
+                    ? adminPath[1..]
+                    : adminPath;
+        }
     }
 }
 
