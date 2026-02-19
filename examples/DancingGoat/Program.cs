@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-
-using DancingGoat;
+﻿using DancingGoat;
 using DancingGoat.EmailComponents;
 using DancingGoat.Helpers.Generators;
 using DancingGoat.Models;
@@ -20,16 +16,10 @@ using Kentico.PageBuilder.Web.Mvc;
 using Kentico.Xperience.Mjml;
 using Kentico.Web.Mvc;
 
-
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Routing;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 
 using Samples.DancingGoat;
 
@@ -132,7 +122,7 @@ app.MapControllerRoute(
     }
 );
 
-app.Run();
+await app.RunAsync();
 
 
 static void ConfigureMembershipServices(IServiceCollection services)
