@@ -1,5 +1,10 @@
 using CMS.Websites;
 
+// NOTE: This test project intentionally depends on Kentico's internal
+// namespace for IShareablePreviewLinkGenerator in order to stub preview
+// link generation behavior. Because this is an Internal API, it may
+// change without notice in future Kentico releases; if a public
+// alternative becomes available, these tests should be updated to use it.
 using Kentico.Content.Web.Mvc.Internal;
 
 namespace XperienceCommunity.ComponentRegistry.Tests;
