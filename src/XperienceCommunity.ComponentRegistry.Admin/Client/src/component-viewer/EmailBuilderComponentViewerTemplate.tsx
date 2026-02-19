@@ -133,7 +133,7 @@ const EmailComponentTableRow: React.FC<{
         <TableCell>
           {component.markedTypeName ? (
             <div
-              className="max-w-xs overflow-x-auto overflow-y-hidden"
+              className="max-w-44 overflow-x-auto overflow-y-hidden"
               title={component.markedTypeName}
             >
               <code className="px-2 py-1 bg-purple-50 rounded text-xs font-mono text-purple-700 whitespace-nowrap">
@@ -144,22 +144,6 @@ const EmailComponentTableRow: React.FC<{
             <span className="text-slate-400">—</span>
           )}
         </TableCell>
-        {componentType === 'widget' && 'propertiesTypeName' in component && (
-          <TableCell>
-            {component.propertiesTypeName ? (
-              <div
-                className="max-w-xs overflow-x-auto overflow-y-hidden"
-                title={component.propertiesTypeName}
-              >
-                <code className="px-2 py-1 bg-indigo-50 rounded text-xs font-mono text-indigo-700 whitespace-nowrap">
-                  {component.propertiesTypeName}
-                </code>
-              </div>
-            ) : (
-              <span className="text-slate-400">—</span>
-            )}
-          </TableCell>
-        )}
         {isTemplate && (
           <TableCell>
             {component.contentTypeNames.length > 0 ? (
@@ -182,7 +166,7 @@ const EmailComponentTableRow: React.FC<{
 
       {expanded && (
         <TableRow>
-          <TableCell colSpan={isTemplate ? 8 : 7} className="p-0">
+          <TableCell colSpan={isTemplate ? 7 : 6} className="p-0">
             <div className="p-4 bg-slate-50 border-t">
               {usageData ? (
                 <ComponentDetailsPanel
@@ -214,7 +198,7 @@ export const EmailBuilderComponentViewerTemplate = (
     props.widgets.length + props.sections.length + props.emailTemplates.length;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-8">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-8 overflow-x-hidden">
       <div className="max-w-7xl mx-auto space-y-8">
         {/* Header */}
         <div className="space-y-2">
@@ -334,11 +318,8 @@ export const EmailBuilderComponentViewerTemplate = (
                           <TableHead className="font-semibold !text-slate-700">
                             Icon
                           </TableHead>
-                          <TableHead className="font-semibold !text-slate-700">
+                          <TableHead className="w-44 font-semibold !text-slate-700">
                             Component Type
-                          </TableHead>
-                          <TableHead className="font-semibold !text-slate-700">
-                            Properties Type
                           </TableHead>
                         </TableRow>
                       </TableHeader>
@@ -394,7 +375,7 @@ export const EmailBuilderComponentViewerTemplate = (
                           <TableHead className="font-semibold !text-slate-700">
                             Icon
                           </TableHead>
-                          <TableHead className="font-semibold !text-slate-700">
+                          <TableHead className="w-44 font-semibold !text-slate-700">
                             Component Type
                           </TableHead>
                         </TableRow>
@@ -451,7 +432,7 @@ export const EmailBuilderComponentViewerTemplate = (
                           <TableHead className="font-semibold !text-slate-700">
                             Icon
                           </TableHead>
-                          <TableHead className="font-semibold !text-slate-700">
+                          <TableHead className="w-44 font-semibold !text-slate-700">
                             Component Type
                           </TableHead>
                           <TableHead className="font-semibold !text-slate-700">
