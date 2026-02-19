@@ -63,6 +63,7 @@ builder.Services.AddKentico(features =>
 });
 
 builder.Services.AddComponentRegistry();
+builder.Services.AddComponentRegistryMcp(builder.Configuration);
 
 builder.Services.Configure<RouteOptions>(options => options.LowercaseUrls = true);
 
@@ -105,6 +106,7 @@ app.UseAuthorization();
 app.UseStatusCodePagesWithReExecute("/error/{0}");
 
 app.Kentico().MapRoutes();
+app.MapComponentRegistryMcp(app.Configuration);
 
 app.MapControllerRoute(
    name: "error",

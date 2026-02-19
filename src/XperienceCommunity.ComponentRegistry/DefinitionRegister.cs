@@ -21,7 +21,9 @@ internal class DefinitionRegister<TKey, TValue> where TKey : notnull
     public DefinitionRegister(IEqualityComparer<TKey> comparer)
     {
         this.comparer = comparer;
-        register = new Dictionary<TKey, TValue>(comparer);
+#pragma warning disable IDE0028
+        register = new(comparer);
+#pragma warning restore IDE0028
     }
 
 

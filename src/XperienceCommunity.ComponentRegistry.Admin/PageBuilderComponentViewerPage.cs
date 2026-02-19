@@ -1,4 +1,3 @@
-using Kentico.Builder.Web.Mvc;
 using Kentico.Xperience.Admin.Base;
 
 using XperienceCommunity.ComponentRegistry.Admin;
@@ -19,47 +18,18 @@ namespace XperienceCommunity.ComponentRegistry.Admin;
 /// </summary>
 [UIEvaluatePermission(ComponentRegistryPermissions.VIEW_PAGE_BUILDER)]
 public class PageBuilderComponentViewerPage(
-    IComponentDefinitionStore<PageBuilderWidgetDefinition> widgetStore,
-    IComponentDefinitionStore<PageBuilderSectionDefinition> sectionStore,
-    IComponentDefinitionStore<PageBuilderPageTemplateDefinition> pageTemplateStore,
+    IComponentRegistryReadService componentRegistryReadService,
     IComponentUsageService componentUsageService,
-    IAdminBuildersLocalizationService localizer,
     IUIPermissionEvaluator permissionEvaluator) : Page<PageBuilderComponentViewerPageClientProperties>
 {
     public override async Task<PageBuilderComponentViewerPageClientProperties> ConfigureTemplateProperties(
         PageBuilderComponentViewerPageClientProperties properties)
     {
-        var widgets = widgetStore.GetAll()
-            .Select(w => new ComponentDto(
-                w.Identifier,
-                localizer.LocalizeString(w.Name),
-                localizer.LocalizeString(w.Description),
-                w.IconClass,
-                w.MarkedType?.FullName))
-            .ToList();
+        var model = await componentRegistryReadService.GetPageBuilderRegistryAsync();
 
-        var sections = sectionStore.GetAll()
-            .Select(s => new ComponentDto(
-                s.Identifier,
-                localizer.LocalizeString(s.Name),
-                localizer.LocalizeString(s.Description),
-                s.IconClass,
-                s.MarkedType?.FullName))
-            .ToList();
-
-        var pageTemplates = pageTemplateStore.GetAll()
-            .Select(pt => new PageTemplateDto(
-                pt.Identifier,
-                localizer.LocalizeString(pt.Name),
-                localizer.LocalizeString(pt.Description),
-                pt.IconClass,
-                pt.MarkedType?.FullName,
-                pt.ContentTypeNames))
-            .ToList();
-
-        properties.Widgets = widgets;
-        properties.Sections = sections;
-        properties.PageTemplates = pageTemplates;
+        properties.Widgets = model.Widgets;
+        properties.Sections = model.Sections;
+        properties.PageTemplates = model.PageTemplates;
 
         // Evaluate permissions and propagate to client
         var canViewPageBuilderUsages = await permissionEvaluator.Evaluate(
@@ -100,29 +70,3 @@ public class PageBuilderComponentViewerPageClientProperties : TemplateClientProp
     public IEnumerable<PageTemplateDto> PageTemplates { get; set; } = [];
     public bool CanViewPageBuilderUsages { get; set; }
 }
-
-/// <summary>
-/// Data transfer object for component definitions.
-/// </summary>
-public record ComponentDto(
-    string Identifier,
-    string Name,
-    string? Description,
-    string? IconClass,
-    string? MarkedTypeName);
-
-/// <summary>
-/// Data transfer object for page template definitions.
-/// </summary>
-public record PageTemplateDto(
-    string Identifier,
-    string Name,
-    string? Description,
-    string? IconClass,
-    string? MarkedTypeName,
-    string[] ContentTypeNames);
-
-/// <summary>
-/// Parameters for component details page command.
-/// </summary>
-public record ComponentDetailsParams(string ComponentIdentifier);

@@ -69,9 +69,33 @@ Register the library's services in your ASP.NET Core application:
 // ...
 
 builder.Services.AddComponentRegistry();
+builder.Services.AddComponentRegistryMcp(builder.Configuration);
 ```
 
 Run the application and navigate to the "Component Registry" application in the Xperience administration under the "Development" category.
+
+To expose registry definitions and usage data over MCP, enable the configuration section below (disabled by default):
+
+```json
+{
+  "XperienceCommunity": {
+    "ComponentRegistry": {
+      "Mcp": {
+        "Enabled": true,
+        "EndpointPath": "/mcp/component-registry"
+      }
+    }
+  }
+}
+```
+
+Then map the endpoint in `Program.cs`:
+
+```csharp
+app.MapComponentRegistryMcp(app.Configuration);
+```
+
+For initial setup, prefer enabling MCP only in development and protect endpoint access at network/app-auth level.
 
 ## Full Instructions
 

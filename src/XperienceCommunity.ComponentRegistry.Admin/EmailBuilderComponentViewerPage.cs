@@ -1,4 +1,3 @@
-using Kentico.Builder.Web.Mvc;
 using Kentico.Xperience.Admin.Base;
 
 using XperienceCommunity.ComponentRegistry.Admin;
@@ -19,49 +18,18 @@ namespace XperienceCommunity.ComponentRegistry.Admin;
 /// </summary>
 [UIEvaluatePermission(ComponentRegistryPermissions.VIEW_EMAIL_BUILDER)]
 public class EmailBuilderComponentViewerPage(
-    IComponentDefinitionStore<EmailBuilderWidgetDefinition> emailWidgetStore,
-    IComponentDefinitionStore<EmailBuilderSectionDefinition> emailSectionStore,
-    IComponentDefinitionStore<EmailBuilderTemplateDefinition> emailTemplateStore,
+    IComponentRegistryReadService componentRegistryReadService,
     IComponentUsageService componentUsageService,
-    IAdminBuildersLocalizationService localizer,
     IUIPermissionEvaluator permissionEvaluator) : Page<EmailBuilderComponentViewerPageClientProperties>
 {
     public override async Task<EmailBuilderComponentViewerPageClientProperties> ConfigureTemplateProperties(
         EmailBuilderComponentViewerPageClientProperties properties)
     {
-        var widgets = emailWidgetStore.GetAll()
-            .Select(w => new EmailComponentDto(
-                w.Identifier,
-                localizer.LocalizeString(w.Name),
-                localizer.LocalizeString(w.Description),
-                w.IconClass,
-                w.MarkedType?.FullName,
-                w.PropertiesType?.FullName))
-            .ToList();
+        var model = await componentRegistryReadService.GetEmailBuilderRegistryAsync();
 
-        var sections = emailSectionStore.GetAll()
-            .Select(s => new EmailComponentDto(
-                s.Identifier,
-                localizer.LocalizeString(s.Name),
-                localizer.LocalizeString(s.Description),
-                s.IconClass,
-                s.MarkedType?.FullName,
-                null))
-            .ToList();
-
-        var emailTemplates = emailTemplateStore.GetAll()
-            .Select(et => new EmailTemplateDto(
-                et.Identifier,
-                localizer.LocalizeString(et.Name),
-                localizer.LocalizeString(et.Description),
-                et.IconClass,
-                et.MarkedType?.FullName,
-                et.ContentTypeNames))
-            .ToList();
-
-        properties.Widgets = widgets;
-        properties.Sections = sections;
-        properties.EmailTemplates = emailTemplates;
+        properties.Widgets = model.Widgets;
+        properties.Sections = model.Sections;
+        properties.EmailTemplates = model.EmailTemplates;
 
         // Evaluate permissions and propagate to client
         var canViewEmailBuilderUsages = await permissionEvaluator.Evaluate(
@@ -102,25 +70,3 @@ public class EmailBuilderComponentViewerPageClientProperties : TemplateClientPro
     public IEnumerable<EmailTemplateDto> EmailTemplates { get; set; } = [];
     public bool CanViewEmailBuilderUsages { get; set; }
 }
-
-/// <summary>
-/// Data transfer object for email builder component definitions.
-/// </summary>
-public record EmailComponentDto(
-    string Identifier,
-    string Name,
-    string? Description,
-    string? IconClass,
-    string? MarkedTypeName,
-    string? PropertiesTypeName);
-
-/// <summary>
-/// Data transfer object for email builder template definitions.
-/// </summary>
-public record EmailTemplateDto(
-    string Identifier,
-    string Name,
-    string? Description,
-    string? IconClass,
-    string? MarkedTypeName,
-    string[] ContentTypeNames);

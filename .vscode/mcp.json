@@ -3,6 +3,10 @@
     "kentico-docs-mcp": {
       "type": "http",
       "url": "https://docs.kentico.com/mcp"
+    },
+    "xperience-component-registry": {
+      "type": "http",
+      "url": "http://localhost:53856/mcp/component-registry"
     }
   }
 }

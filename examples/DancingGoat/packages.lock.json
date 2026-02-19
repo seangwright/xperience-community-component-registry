@@ -67,9 +67,9 @@
       },
       "Microsoft.AspNetCore.App.Internal.Assets": {
         "type": "Direct",
-        "requested": "[10.0.2, )",
-        "resolved": "10.0.2",
-        "contentHash": "fMAqrUm+aspxRAsCJ6Hlgs96XSHwNIr9HBNt7wyBAzQkPlfE7w+0C4NzDoJnso5YZyDI0VcRtEXxG9odt3KiZA=="
+        "requested": "[10.0.3, )",
+        "resolved": "10.0.3",
+        "contentHash": "mr3Zn+ht8lijYvlMIasftw9opU9hsLKDdnOgQMmYI3RjWPJLOF9l8+YHDseRkTs97wOrULmJgo/NDCmzL/EGDg=="
       },
       "SonarAnalyzer.CSharp": {
         "type": "Direct",
@@ -583,8 +583,8 @@
       },
       "Microsoft.Extensions.AI.Abstractions": {
         "type": "Transitive",
-        "resolved": "10.0.1",
-        "contentHash": "SR78I0BV7ljDovyVsZQqpt2NezdLoDtoIOCNwqAteuPc8f5PEmvDjokOQxKnTwXo/9RBKnmrzuPzbsuvueZcrg=="
+        "resolved": "10.2.0",
+        "contentHash": "ONGlIBht0ygEdKc0bCt9XWUiq19/460dAu7fCKzPM34OFJSMQIohEDTJwjCJ8vVp8znNakloc9xFF9+R/eDCYQ=="
       },
       "Microsoft.Extensions.AI.OpenAI": {
         "type": "Transitive",
@@ -761,6 +761,14 @@
           "HtmlPerformanceKit": "1.0.0"
         }
       },
+      "ModelContextProtocol.Core": {
+        "type": "Transitive",
+        "resolved": "0.8.0-preview.1",
+        "contentHash": "BceTXxLV5d16gIJHiGvHPLlQARat3u53FuJv+sZfO+L7BGbdFwTbUJxUS0/gCpxmwd8GGnCjhT5Qdfw1+m9WJw==",
+        "dependencies": {
+          "Microsoft.Extensions.AI.Abstractions": "10.2.0"
+        }
+      },
       "Mono.Cecil": {
         "type": "Transitive",
         "resolved": "0.11.6",
@@ -877,14 +885,34 @@
       "xperiencecommunity.componentregistry": {
         "type": "Project",
         "dependencies": {
-          "Kentico.Xperience.Admin": "[31.1.1, )"
+          "Kentico.Xperience.Admin": "[31.1.1, )",
+          "ModelContextProtocol": "[0.8.0-preview.1, )",
+          "ModelContextProtocol.AspNetCore": "[0.8.0-preview.1, )"
         }
       },
       "xperiencecommunity.componentregistry.admin": {
         "type": "Project",
         "dependencies": {
-          "XperienceCommunity.ComponentRegistry": "[1.0.0-prerelease-1, )",
+          "XperienceCommunity.ComponentRegistry": "[1.0.2, )",
           "kentico.xperience.admin": "[31.1.1, )"
+        }
+      },
+      "ModelContextProtocol": {
+        "type": "CentralTransitive",
+        "requested": "[0.8.0-preview.1, )",
+        "resolved": "0.8.0-preview.1",
+        "contentHash": "hDhRtuMa2XBI70X/aIyvDv8/b5HIlRGenMiAk5LkM/8dhBuYNYBpbCwCFF+D2l0g8wa24WddPA3ciI55Uc3+/A==",
+        "dependencies": {
+          "ModelContextProtocol.Core": "0.8.0-preview.1"
+        }
+      },
+      "ModelContextProtocol.AspNetCore": {
+        "type": "CentralTransitive",
+        "requested": "[0.8.0-preview.1, )",
+        "resolved": "0.8.0-preview.1",
+        "contentHash": "vtDaGXuZ4zLurH/63ymCDxKy3tIeJc5sLJV0nVtWBHj1gM9ME3jNKY1t+RrUQ9P22t4T1nHUEeBP0xR3J3YBgA==",
+        "dependencies": {
+          "ModelContextProtocol": "0.8.0-preview.1"
         }
       }
     }
