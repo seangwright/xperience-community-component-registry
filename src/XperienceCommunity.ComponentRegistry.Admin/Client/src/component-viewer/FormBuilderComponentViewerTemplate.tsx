@@ -16,7 +16,7 @@ import {
   TableRow,
 } from './ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
-import { ChevronDown, Loader } from 'lucide-react';
+import { ChevronDown, Link, Loader } from 'lucide-react';
 import {
   FormComponentDto,
   FormComponentUsageDetailDto,
@@ -282,31 +282,35 @@ const FormComponentTableRow: React.FC<{
                               <div className="text-xs font-medium text-slate-700 mb-2">
                                 Forms:
                               </div>
-                              <div className="space-y-2 max-h-64 overflow-y-auto">
+                              <div className="space-y-2 max-h-64 overflow-y-auto pr-3">
                                 {combinedForms.map((form) => (
                                   <div
                                     key={form.key}
-                                    className="p-3 bg-slate-50 rounded border border-slate-200 text-xs"
+                                    className="p-3 bg-slate-50 rounded border border-slate-200 text-xs flex items-center justify-between gap-3"
                                   >
-                                    <div className="font-medium text-slate-900 mb-1">
-                                      {form.displayName}
-                                    </div>
-                                    <div className="font-mono text-slate-600 text-xs">
-                                      {form.codeName}
-                                    </div>
-                                    {form.tableName && (
-                                      <div className="text-slate-500 text-xs mt-1">
-                                        Table: {form.tableName}
+                                    <div className="min-w-0 flex-1">
+                                      <div className="font-medium text-slate-900 mb-1">
+                                        {form.displayName}
                                       </div>
-                                    )}
-                                    {form.adminPath && (
+                                      <div className="font-mono text-slate-600 text-xs">
+                                        {form.codeName}
+                                      </div>
+                                      {form.tableName && (
+                                        <div className="text-slate-500 text-xs mt-1">
+                                          Table: {form.tableName}
+                                        </div>
+                                      )}
+                                    </div>
+                                    {form.adminPath ? (
                                       <a
                                         href={form.adminPath}
-                                        className="inline-block mt-2 text-blue-700 hover:text-blue-900 underline"
+                                        title="Open form in Form Builder"
+                                        aria-label="Open form in Form Builder"
+                                        className="text-blue-700 hover:text-blue-900 flex-shrink-0 mr-2"
                                       >
-                                        Open in administration
+                                        <Link size={20} />
                                       </a>
-                                    )}
+                                    ) : null}
                                   </div>
                                 ))}
                               </div>
