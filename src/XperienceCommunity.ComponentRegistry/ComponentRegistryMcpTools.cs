@@ -1,5 +1,9 @@
 using System.ComponentModel;
 
+using CMS.Websites;
+
+using Kentico.Content.Web.Mvc.Internal;
+
 using ModelContextProtocol.Server;
 
 namespace XperienceCommunity.ComponentRegistry;
@@ -10,7 +14,9 @@ namespace XperienceCommunity.ComponentRegistry;
 [McpServerToolType]
 public class ComponentRegistryMcpTools(
     IComponentRegistryReadService readService,
-    IComponentUsageService componentUsageService)
+    IComponentUsageService componentUsageService,
+    IWebPageUrlRetriever webPageUrlRetriever,
+    IShareablePreviewLinkGenerator shareablePreviewLinkGenerator)
 {
     /// <summary>
     /// Lists registered component definitions for a builder and component type.
@@ -95,6 +101,96 @@ public class ComponentRegistryMcpTools(
         };
 
         return await componentUsageService.GetBatchUsageAsync(componentIdentifiers, usageType);
+    }
+
+    /// <summary>
+    /// Gets the absolute URL for a web page by its ID and language.
+    /// For published pages, returns the live page URL via IWebPageUrlRetriever.
+    /// For unpublished pages with draft changes, returns a shareable preview URL via IShareablePreviewLinkGenerator.
+    /// Enables AI agents to visit and validate component rendering on both published and draft pages.
+    /// </summary>
+    [McpServerTool(Name = "component_registry_get_web_page_url")]
+    [Description("Get absolute URL for a web page. If isPublished=true, returns the live URL of the published page. If isPublished=false, returns a shareable preview link for viewing unpublished changes. Use the IsPublished value from GetComponentUsage PageVariantDto to determine which URL type to request. Returns URL that agents can use to visit and validate component rendering.")]
+    public async Task<WebPageUrlResponse> GetWebPageUrl(
+        int webPageItemId,
+        string languageName,
+        bool isPublished = true,
+        CancellationToken cancellationToken = default)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+
+        if (string.IsNullOrWhiteSpace(languageName))
+        {
+            throw new ArgumentException("Language name is required.", nameof(languageName));
+        }
+
+        if (webPageItemId <= 0)
+        {
+            throw new ArgumentException("Web page item ID must be greater than zero.", nameof(webPageItemId));
+        }
+
+        try
+        {
+            if (!isPublished)
+            {
+                // For unpublished pages with draft changes, use shareable preview URL
+                try
+                {
+                    string shareableUrl = await shareablePreviewLinkGenerator.Generate(webPageItemId, languageName, cancellationToken);
+                    if (!string.IsNullOrWhiteSpace(shareableUrl))
+                    {
+                        return new WebPageUrlResponse(
+                            WebPageItemId: webPageItemId,
+                            LanguageName: languageName,
+                            IsPublished: false,
+                            UrlType: "ShareablePreview",
+                            Url: shareableUrl,
+                            Success: true,
+                            ErrorMessage: null);
+                    }
+                }
+                catch (Exception shareableEx)
+                {
+                    // If shareable preview generation fails, return error
+                    // This can happen if the page is not eligible for shareable preview (e.g., custom auth scheme)
+                    return new WebPageUrlResponse(
+                        WebPageItemId: webPageItemId,
+                        LanguageName: languageName,
+                        IsPublished: false,
+                        UrlType: null,
+                        Url: null,
+                        Success: false,
+                        ErrorMessage: $"Failed to generate shareable preview URL: {shareableEx.Message}");
+                }
+            }
+
+            // For published pages, use standard URL retrieval
+            var webPageUrl = await webPageUrlRetriever.Retrieve(
+                webPageItemId,
+                languageName,
+                forPreview: false,
+                cancellationToken);
+
+            return new WebPageUrlResponse(
+                WebPageItemId: webPageItemId,
+                LanguageName: languageName,
+                IsPublished: true,
+                UrlType: "Published",
+                Url: webPageUrl.AbsoluteUrl,
+                Success: true,
+                ErrorMessage: null);
+        }
+        catch (Exception ex)
+        {
+            return new WebPageUrlResponse(
+                WebPageItemId: webPageItemId,
+                LanguageName: languageName,
+                IsPublished: isPublished,
+                UrlType: null,
+                Url: null,
+                Success: false,
+                ErrorMessage: $"Failed to retrieve URL for web page {webPageItemId}: {ex.Message}");
+        }
     }
 
     private async Task<List<ComponentDefinitionItem>> ListPageBuilderDefinitions(string componentType, CancellationToken cancellationToken)
@@ -274,3 +370,26 @@ public record ComponentDefinitionListResponse(
     string Builder,
     string ComponentType,
     IReadOnlyList<ComponentDefinitionItem> Items);
+
+/// <summary>
+/// Response payload for web page URL retrieval tool.
+/// Contains absolute URL for a web page (published or shareable preview) or an error message if retrieval failed.
+/// </summary>
+public record WebPageUrlResponse(
+    int WebPageItemId,
+    string LanguageName,
+    bool IsPublished,
+    string? UrlType,
+    string? Url,
+    bool Success,
+    string? ErrorMessage);
+
+/// <summary>
+/// Possible URL types returned by the web page URL tool.
+/// </summary>
+public static class WebPageUrlType
+{
+    public const string Published = "Published";
+    public const string Preview = "Preview";
+    public const string ShareablePreview = "ShareablePreview";
+}

@@ -1,3 +1,7 @@
+using CMS.Websites;
+
+using Kentico.Content.Web.Mvc.Internal;
+
 namespace XperienceCommunity.ComponentRegistry.Tests;
 
 public class ComponentRegistryMcpToolsTests
@@ -13,14 +17,19 @@ public class ComponentRegistryMcpToolsTests
                     PageTemplates: [new PageTemplateDto("pt1", "Template 1", null, null, null, ["Acme.Page"])]),
                 new EmailBuilderRegistryReadModel([], [], []),
                 new FormBuilderRegistryReadModel([], [])),
-            new StubUsageService());
+            new StubUsageService(),
+            new StubWebPageUrlRetriever(),
+            new StubShareablePreviewLinkGenerator());
 
         var response = await tools.ListComponentDefinitions("page", "all");
 
-        Assert.That(response.Builder, Is.EqualTo("page"));
-        Assert.That(response.Items, Has.Count.EqualTo(2));
-        Assert.That(response.Items.Any(i => i.ComponentType == "widget" && i.Identifier == "w1"), Is.True);
-        Assert.That(response.Items.Any(i => i.ComponentType == "page-template" && i.Identifier == "pt1"), Is.True);
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(response.Builder, Is.EqualTo("page"));
+            Assert.That(response.Items, Has.Count.EqualTo(2));
+            Assert.That(response.Items.Any(i => i.ComponentType == "widget" && i.Identifier == "w1"), Is.True);
+            Assert.That(response.Items.Any(i => i.ComponentType == "page-template" && i.Identifier == "pt1"), Is.True);
+        }
     }
 
     [Test]
@@ -32,7 +41,9 @@ public class ComponentRegistryMcpToolsTests
                 new PageBuilderRegistryReadModel([], [], []),
                 new EmailBuilderRegistryReadModel([], [], []),
                 new FormBuilderRegistryReadModel([], [])),
-            usage);
+            usage,
+            new StubWebPageUrlRetriever(),
+            new StubShareablePreviewLinkGenerator());
 
         _ = await tools.GetComponentUsage("form", "section", "form.section");
 
@@ -47,7 +58,9 @@ public class ComponentRegistryMcpToolsTests
                 new PageBuilderRegistryReadModel([], [], []),
                 new EmailBuilderRegistryReadModel([], [], []),
                 new FormBuilderRegistryReadModel([], [])),
-            new StubUsageService());
+            new StubUsageService(),
+            new StubWebPageUrlRetriever(),
+            new StubShareablePreviewLinkGenerator());
 
         Assert.ThrowsAsync<ArgumentException>(async () =>
             await tools.GetPageBuilderBatchUsage(["x"], "section"));
@@ -111,4 +124,34 @@ internal sealed class StubUsageService : IComponentUsageService
         LastCall = $"form-section:{sectionIdentifier}";
         return Task.FromResult(new FormComponentUsageDetailDto { ComponentIdentifier = sectionIdentifier, ComponentType = "Section" });
     }
+}
+
+internal sealed class StubWebPageUrlRetriever : IWebPageUrlRetriever
+{
+    public Task<WebPageUrl> Retrieve(IWebPageFieldsSource webPageFieldsSource, CancellationToken cancellationToken = default) =>
+        throw new NotImplementedException();
+
+    public Task<WebPageUrl> Retrieve(IWebPageFieldsSource webPageFieldsSource, string languageName, CancellationToken cancellationToken = default) =>
+        throw new NotImplementedException();
+
+    public Task<WebPageUrl> Retrieve(string webPageUrlPath, string webPageTreePath, int websiteChannelId, string languageName, CancellationToken cancellationToken = default) =>
+        throw new NotImplementedException();
+
+    public Task<WebPageUrl> Retrieve(string webPageTreePath, string websiteChannelName, string languageName, bool forPreview = false, CancellationToken cancellationToken = default) =>
+        Task.FromResult(new WebPageUrl($"/{languageName}/page", null));
+
+    public Task<WebPageUrl> Retrieve(int webPageItemId, string languageName, bool forPreview = false, CancellationToken cancellationToken = default) =>
+        Task.FromResult(new WebPageUrl($"/{languageName}/page-{webPageItemId}", null));
+
+    public Task<WebPageUrl> Retrieve(Guid webPageItemGuid, string languageName, bool forPreview = false, CancellationToken cancellationToken = default) =>
+        throw new NotImplementedException();
+
+    public Task<IDictionary<Guid, WebPageUrl>> Retrieve(IReadOnlyCollection<Guid> webPageItemGuids, string websiteChannelName, string languageName, bool forPreview = false, CancellationToken cancellationToken = default) =>
+        throw new NotImplementedException();
+}
+
+internal sealed class StubShareablePreviewLinkGenerator : IShareablePreviewLinkGenerator
+{
+    public Task<string?> Generate(int webPageItemId, string languageName, CancellationToken cancellationToken = default) =>
+        Task.FromResult<string?>($"https://preview.example.com/{languageName}/page-{webPageItemId}?preview=abc123");
 }
