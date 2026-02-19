@@ -1,4 +1,5 @@
 using Kentico.Xperience.Admin.Base;
+using Kentico.Xperience.Admin.Websites.UIPages;
 
 using XperienceCommunity.ComponentRegistry.Admin;
 
@@ -18,6 +19,7 @@ namespace XperienceCommunity.ComponentRegistry.Admin;
 /// </summary>
 [UIEvaluatePermission(ComponentRegistryPermissions.VIEW_PAGE_BUILDER)]
 public class PageBuilderComponentViewerPage(
+    IPageLinkGenerator pageLinkGenerator,
     IComponentRegistryReadService componentRegistryReadService,
     IComponentUsageService componentUsageService,
     IUIPermissionEvaluator permissionEvaluator) : Page<PageBuilderComponentViewerPageClientProperties>
@@ -46,6 +48,7 @@ public class PageBuilderComponentViewerPage(
     public async Task<ICommandResponse> GetPageBuilderPageTemplateUsage(ComponentDetailsParams @params)
     {
         var usage = await componentUsageService.GetPageBuilderPageTemplateUsageAsync(@params.ComponentIdentifier);
+        AddAdminPaths(usage);
         return ResponseFrom(usage);
     }
 
@@ -56,7 +59,28 @@ public class PageBuilderComponentViewerPage(
     public async Task<ICommandResponse> GetPageBuilderWidgetUsage(ComponentDetailsParams @params)
     {
         var usage = await componentUsageService.GetPageBuilderWidgetUsageAsync(@params.ComponentIdentifier);
+        AddAdminPaths(usage);
         return ResponseFrom(usage);
+    }
+
+    private void AddAdminPaths(ComponentUsageDetailDto usage)
+    {
+        foreach (var page in usage.Pages)
+        {
+            foreach (var variant in page.Variants)
+            {
+                string adminPath = pageLinkGenerator.GetPath<PageBuilderTab>(
+                    new PageParameterValues()
+                    {
+                        { typeof(WebPageLayout), $"{variant.LanguageName}_{page.WebPageItemId}" },
+                        { typeof(WebPagesApplication), $"webpages-{page.WebsiteChannelID}" },
+                    });
+
+                variant.AdminPath = adminPath.StartsWith('/')
+                    ? adminPath[1..]
+                    : adminPath;
+            }
+        }
     }
 }
 

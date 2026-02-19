@@ -81,6 +81,57 @@ const FormComponentTableRow: React.FC<{
     setExpanded(!expanded);
   };
 
+  const combinedForms = usageData
+    ? (() => {
+        const normalizeFormKey = (value: string) =>
+          value
+            .replace(/^BizForm\./i, '')
+            .trim()
+            .toLowerCase();
+
+        const formsByKey = new Map<
+          string,
+          {
+            key: string;
+            displayName: string;
+            codeName: string;
+            tableName?: string;
+            adminPath?: string;
+          }
+        >();
+
+        usageData.formClasses.forEach((formClass) => {
+          const codeName = formClass.className || formClass.classDisplayName;
+          const key = normalizeFormKey(codeName);
+
+          formsByKey.set(key, {
+            key,
+            displayName: formClass.classDisplayName,
+            codeName,
+            tableName: formClass.classTableName,
+          });
+        });
+
+        usageData.formBuilderForms.forEach((form) => {
+          const codeName = form.formName || form.formDisplayName;
+          const key = normalizeFormKey(codeName);
+          const existing = formsByKey.get(key);
+
+          formsByKey.set(key, {
+            key,
+            displayName: existing?.displayName || form.formDisplayName,
+            codeName: existing?.codeName || codeName,
+            tableName: existing?.tableName,
+            adminPath: form.adminPath || existing?.adminPath,
+          });
+        });
+
+        return Array.from(formsByKey.values()).sort((a, b) =>
+          a.displayName.localeCompare(b.displayName),
+        );
+      })()
+    : [];
+
   return (
     <>
       <TableRow>
@@ -198,126 +249,75 @@ const FormComponentTableRow: React.FC<{
                   </h5>
                   {usageData ? (
                     <div className="space-y-6">
-                      {usageData.componentType === 'Component' ? (
-                        // Show form classes only for components
-                        <div>
-                          <h6 className="text-sm font-medium text-slate-600 mb-3">
-                            Legacy Form Classes
-                          </h6>
-                          <div className="space-y-3">
-                            <div className="grid grid-cols-2 gap-4 text-sm">
-                              <div className="bg-blue-50 p-3 rounded">
-                                <div className="text-xs text-blue-700 font-medium">
-                                  Total Form Classes
-                                </div>
-                                <div className="text-xl font-bold text-blue-900">
-                                  {usageData.totalFormClassesUsing}
-                                </div>
+                      <div>
+                        <h6 className="text-sm font-medium text-slate-600 mb-3">
+                          Form Builder
+                        </h6>
+                        <div className="space-y-3">
+                          <div className="grid grid-cols-2 gap-4 text-sm">
+                            <div className="bg-blue-50 p-3 rounded">
+                              <div className="text-xs text-blue-700 font-medium">
+                                Total Forms
                               </div>
-                              <div className="bg-slate-100 p-3 rounded">
-                                <div className="text-xs text-slate-700 font-medium">
-                                  Last Updated
-                                </div>
-                                <div className="text-sm text-slate-600">
-                                  {usageData.lastModified
-                                    ? new Date(
-                                        usageData.lastModified,
-                                      ).toLocaleDateString()
-                                    : 'N/A'}
-                                </div>
+                              <div className="text-xl font-bold text-blue-900">
+                                {combinedForms.length}
                               </div>
                             </div>
-
-                            {usageData.formClasses.length > 0 ? (
-                              <div className="mt-4">
-                                <div className="text-xs font-medium text-slate-700 mb-2">
-                                  Form Classes:
-                                </div>
-                                <div className="space-y-2 max-h-64 overflow-y-auto">
-                                  {usageData.formClasses.map((formClass) => (
-                                    <div
-                                      key={formClass.classId}
-                                      className="p-3 bg-slate-50 rounded border border-slate-200 text-xs"
-                                    >
-                                      <div className="font-medium text-slate-900 mb-1">
-                                        {formClass.classDisplayName}
-                                      </div>
-                                      <div className="font-mono text-slate-600 text-xs mb-1">
-                                        {formClass.className}
-                                      </div>
-                                      <div className="text-slate-500 text-xs">
-                                        Table: {formClass.classTableName}
-                                      </div>
-                                    </div>
-                                  ))}
-                                </div>
+                            <div className="bg-slate-100 p-3 rounded">
+                              <div className="text-xs text-slate-700 font-medium">
+                                Last Updated
                               </div>
-                            ) : (
-                              <div className="p-3 bg-yellow-50 rounded text-sm text-yellow-700">
-                                No legacy form classes use this component
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      ) : (
-                        // Show form builder forms only for sections
-                        <div>
-                          <h6 className="text-sm font-medium text-slate-600 mb-3">
-                            Form Builder Forms
-                          </h6>
-                          <div className="space-y-3">
-                            <div className="grid grid-cols-2 gap-4 text-sm">
-                              <div className="bg-green-50 p-3 rounded">
-                                <div className="text-xs text-green-700 font-medium">
-                                  Total Form Builder Forms
-                                </div>
-                                <div className="text-xl font-bold text-green-900">
-                                  {usageData.totalFormBuilderFormsUsing}
-                                </div>
-                              </div>
-                              <div className="bg-slate-100 p-3 rounded">
-                                <div className="text-xs text-slate-700 font-medium">
-                                  Last Updated
-                                </div>
-                                <div className="text-sm text-slate-600">
-                                  {usageData.lastModified
-                                    ? new Date(
-                                        usageData.lastModified,
-                                      ).toLocaleDateString()
-                                    : 'N/A'}
-                                </div>
+                              <div className="text-sm text-slate-600">
+                                {usageData.lastModified
+                                  ? new Date(
+                                      usageData.lastModified,
+                                    ).toLocaleDateString()
+                                  : 'N/A'}
                               </div>
                             </div>
-
-                            {usageData.formBuilderForms.length > 0 ? (
-                              <div className="mt-4">
-                                <div className="text-xs font-medium text-slate-700 mb-2">
-                                  Forms:
-                                </div>
-                                <div className="space-y-2 max-h-64 overflow-y-auto">
-                                  {usageData.formBuilderForms.map((form) => (
-                                    <div
-                                      key={form.formID}
-                                      className="p-3 bg-slate-50 rounded border border-slate-200 text-xs"
-                                    >
-                                      <div className="font-medium text-slate-900 mb-1">
-                                        {form.formDisplayName}
-                                      </div>
-                                      <div className="font-mono text-slate-600 text-xs">
-                                        {form.formName}
-                                      </div>
-                                    </div>
-                                  ))}
-                                </div>
-                              </div>
-                            ) : (
-                              <div className="p-3 bg-yellow-50 rounded text-sm text-yellow-700">
-                                No form builder forms use this section
-                              </div>
-                            )}
                           </div>
+
+                          {combinedForms.length > 0 ? (
+                            <div className="mt-4">
+                              <div className="text-xs font-medium text-slate-700 mb-2">
+                                Forms:
+                              </div>
+                              <div className="space-y-2 max-h-64 overflow-y-auto">
+                                {combinedForms.map((form) => (
+                                  <div
+                                    key={form.key}
+                                    className="p-3 bg-slate-50 rounded border border-slate-200 text-xs"
+                                  >
+                                    <div className="font-medium text-slate-900 mb-1">
+                                      {form.displayName}
+                                    </div>
+                                    <div className="font-mono text-slate-600 text-xs">
+                                      {form.codeName}
+                                    </div>
+                                    {form.tableName && (
+                                      <div className="text-slate-500 text-xs mt-1">
+                                        Table: {form.tableName}
+                                      </div>
+                                    )}
+                                    {form.adminPath && (
+                                      <a
+                                        href={form.adminPath}
+                                        className="inline-block mt-2 text-blue-700 hover:text-blue-900 underline"
+                                      >
+                                        Open in administration
+                                      </a>
+                                    )}
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="p-3 bg-yellow-50 rounded text-sm text-yellow-700">
+                              No forms use this item
+                            </div>
+                          )}
                         </div>
-                      )}
+                      </div>
                     </div>
                   ) : (
                     <div className="text-slate-500 italic">

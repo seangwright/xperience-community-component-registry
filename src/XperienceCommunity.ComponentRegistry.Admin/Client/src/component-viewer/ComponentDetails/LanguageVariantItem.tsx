@@ -48,6 +48,16 @@ export const LanguageVariantItem: React.FC<LanguageVariantItemProps> = ({
 
       {expanded && (
         <div className="p-3 bg-slate-50 border-t border-slate-200">
+          {variant.adminPath && (
+            <p className="text-xs mb-2">
+              <a
+                href={variant.adminPath}
+                className="text-blue-700 hover:text-blue-900 underline"
+              >
+                Open in administration
+              </a>
+            </p>
+          )}
           <p className="text-xs text-slate-600 mb-2 font-semibold">
             Configuration:
           </p>
