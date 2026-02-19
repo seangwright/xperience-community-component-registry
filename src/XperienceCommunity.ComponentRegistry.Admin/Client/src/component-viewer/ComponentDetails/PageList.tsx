@@ -5,9 +5,17 @@ import { PageUsageDto } from './types';
 
 interface PageListProps {
   pages: PageUsageDto[];
+  inspectedComponentIdentifier: string;
+  inspectedComponentType: string;
+  inspectedComponentTypeName?: string;
 }
 
-export const PageList: React.FC<PageListProps> = ({ pages }) => {
+export const PageList: React.FC<PageListProps> = ({
+  pages,
+  inspectedComponentIdentifier,
+  inspectedComponentType,
+  inspectedComponentTypeName,
+}) => {
   const [searchTerm, setSearchTerm] = useState('');
 
   const filteredPages = useMemo(() => {
@@ -58,7 +66,13 @@ export const PageList: React.FC<PageListProps> = ({ pages }) => {
           </p>
         ) : (
           filteredPages.map((page) => (
-            <PageListItem key={page.webPageItemId} page={page} />
+            <PageListItem
+              key={page.webPageItemId}
+              page={page}
+              inspectedComponentIdentifier={inspectedComponentIdentifier}
+              inspectedComponentType={inspectedComponentType}
+              inspectedComponentTypeName={inspectedComponentTypeName}
+            />
           ))
         )}
       </div>

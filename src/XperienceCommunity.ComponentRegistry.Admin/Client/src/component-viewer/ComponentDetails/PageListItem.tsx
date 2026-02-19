@@ -5,9 +5,17 @@ import { PageUsageDto } from './types';
 
 interface PageListItemProps {
   page: PageUsageDto;
+  inspectedComponentIdentifier: string;
+  inspectedComponentType: string;
+  inspectedComponentTypeName?: string;
 }
 
-export const PageListItem: React.FC<PageListItemProps> = ({ page }) => {
+export const PageListItem: React.FC<PageListItemProps> = ({
+  page,
+  inspectedComponentIdentifier,
+  inspectedComponentType,
+  inspectedComponentTypeName,
+}) => {
   const [variantsExpanded, setVariantsExpanded] = useState(false);
 
   const modifiedDate = page.modifiedAt
@@ -42,7 +50,12 @@ export const PageListItem: React.FC<PageListItemProps> = ({ page }) => {
           <p className="text-xs font-semibold text-slate-700 mb-3">
             Language Variants:
           </p>
-          <LanguageVariantList variants={page.variants} />
+          <LanguageVariantList
+            variants={page.variants}
+            inspectedComponentIdentifier={inspectedComponentIdentifier}
+            inspectedComponentType={inspectedComponentType}
+            inspectedComponentTypeName={inspectedComponentTypeName}
+          />
         </div>
       )}
     </div>

@@ -5,11 +5,19 @@ import { EmailConfigurationUsageDto } from './types';
 
 interface EmailConfigurationListItemProps {
   emailConfiguration: EmailConfigurationUsageDto;
+  inspectedComponentIdentifier: string;
+  inspectedComponentType: string;
+  inspectedComponentTypeName?: string;
 }
 
 export const EmailConfigurationListItem: React.FC<
   EmailConfigurationListItemProps
-> = ({ emailConfiguration }) => {
+> = ({
+  emailConfiguration,
+  inspectedComponentIdentifier,
+  inspectedComponentType,
+  inspectedComponentTypeName,
+}) => {
   const [expanded, setExpanded] = useState(false);
 
   return (
@@ -39,7 +47,12 @@ export const EmailConfigurationListItem: React.FC<
 
       {expanded && (
         <div className="px-4 py-3 bg-slate-50 border-t border-slate-300">
-          <LanguageVariantList variants={emailConfiguration.variants} />
+          <LanguageVariantList
+            variants={emailConfiguration.variants}
+            inspectedComponentIdentifier={inspectedComponentIdentifier}
+            inspectedComponentType={inspectedComponentType}
+            inspectedComponentTypeName={inspectedComponentTypeName}
+          />
         </div>
       )}
     </div>

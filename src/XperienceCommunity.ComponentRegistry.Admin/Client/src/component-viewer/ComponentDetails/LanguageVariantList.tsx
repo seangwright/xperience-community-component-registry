@@ -1,13 +1,19 @@
 import React from 'react';
 import { LanguageVariantItem } from './LanguageVariantItem';
-import { PageVariantDto } from './types';
+import { EmailConfigurationVariantDto, PageVariantDto } from './types';
 
 interface LanguageVariantListProps {
-  variants: PageVariantDto[];
+  variants: PageVariantDto[] | EmailConfigurationVariantDto[];
+  inspectedComponentIdentifier: string;
+  inspectedComponentType: string;
+  inspectedComponentTypeName?: string;
 }
 
 export const LanguageVariantList: React.FC<LanguageVariantListProps> = ({
   variants,
+  inspectedComponentIdentifier,
+  inspectedComponentType,
+  inspectedComponentTypeName,
 }) => {
   if (variants.length === 0) {
     return (
@@ -21,6 +27,9 @@ export const LanguageVariantList: React.FC<LanguageVariantListProps> = ({
         <LanguageVariantItem
           key={variant.contentItemCommonDataId}
           variant={variant}
+          inspectedComponentIdentifier={inspectedComponentIdentifier}
+          inspectedComponentType={inspectedComponentType}
+          inspectedComponentTypeName={inspectedComponentTypeName}
         />
       ))}
     </div>

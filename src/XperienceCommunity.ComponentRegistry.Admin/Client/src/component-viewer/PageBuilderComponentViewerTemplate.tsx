@@ -170,7 +170,10 @@ const ComponentTableRow: React.FC<{
           <TableCell colSpan={isTemplate ? 7 : 6} className="p-0">
             <div className="p-4 bg-slate-50 border-t">
               {usageData ? (
-                <ComponentDetailsPanel data={usageData} />
+                <ComponentDetailsPanel
+                  data={usageData}
+                  inspectedComponentTypeName={component.markedTypeName}
+                />
               ) : expanded && !usageData ? (
                 <div className="flex items-center justify-center p-8">
                   <Loader className="animate-spin text-slate-600 mr-2" />

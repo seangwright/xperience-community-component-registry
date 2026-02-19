@@ -9,6 +9,7 @@ import {
 
 interface ComponentDetailsPanelProps {
   data: ComponentUsageDetailDto | EmailConfigurationUsageDetailDto;
+  inspectedComponentTypeName?: string;
 }
 
 const isPageUsageData = (
@@ -19,6 +20,7 @@ const isPageUsageData = (
 
 export const ComponentDetailsPanel: React.FC<ComponentDetailsPanelProps> = ({
   data,
+  inspectedComponentTypeName,
 }) => {
   const lastModified = data.lastModified
     ? new Date(data.lastModified)
@@ -40,7 +42,12 @@ export const ComponentDetailsPanel: React.FC<ComponentDetailsPanelProps> = ({
 
           {/* Pages List Column */}
           <div className="md:col-span-3">
-            <PageList pages={data.pages} />
+            <PageList
+              pages={data.pages}
+              inspectedComponentIdentifier={data.componentIdentifier}
+              inspectedComponentType={data.componentType}
+              inspectedComponentTypeName={inspectedComponentTypeName}
+            />
           </div>
         </div>
       </div>
@@ -64,6 +71,9 @@ export const ComponentDetailsPanel: React.FC<ComponentDetailsPanelProps> = ({
         <div className="md:col-span-3">
           <EmailConfigurationList
             emailConfigurations={data.emailConfigurations}
+            inspectedComponentIdentifier={data.componentIdentifier}
+            inspectedComponentType={data.componentType}
+            inspectedComponentTypeName={inspectedComponentTypeName}
           />
         </div>
       </div>

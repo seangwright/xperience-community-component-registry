@@ -1,14 +1,20 @@
 import React, { useState } from 'react';
 import { ChevronDown, Link } from 'lucide-react';
 import { JsonViewer } from './JsonViewer';
-import { PageVariantDto } from './types';
+import { EmailConfigurationVariantDto, PageVariantDto } from './types';
 
 interface LanguageVariantItemProps {
-  variant: PageVariantDto;
+  variant: PageVariantDto | EmailConfigurationVariantDto;
+  inspectedComponentIdentifier: string;
+  inspectedComponentType: string;
+  inspectedComponentTypeName?: string;
 }
 
 export const LanguageVariantItem: React.FC<LanguageVariantItemProps> = ({
   variant,
+  inspectedComponentIdentifier,
+  inspectedComponentType,
+  inspectedComponentTypeName,
 }) => {
   const [expanded, setExpanded] = useState(false);
 
@@ -23,6 +29,10 @@ export const LanguageVariantItem: React.FC<LanguageVariantItemProps> = ({
   const adminLinkTitle = variant.configurationType?.startsWith('Email')
     ? 'Open email in Email Builder'
     : 'Open page in Page Builder';
+  const normalizedComponentType = inspectedComponentType.toLowerCase();
+  const enableComponentHighlight =
+    normalizedComponentType.includes('widget') ||
+    normalizedComponentType.includes('section');
 
   return (
     <div className="mb-3 border border-slate-200 rounded overflow-hidden">
@@ -68,7 +78,12 @@ export const LanguageVariantItem: React.FC<LanguageVariantItemProps> = ({
           <p className="text-xs text-slate-600 mb-2 font-semibold">
             Configuration:
           </p>
-          <JsonViewer json={variant.configurationJson} />
+          <JsonViewer
+            json={variant.configurationJson}
+            highlightComponentIdentifier={inspectedComponentIdentifier}
+            highlightComponentTypeName={inspectedComponentTypeName}
+            enableComponentHighlight={enableComponentHighlight}
+          />
         </div>
       )}
     </div>

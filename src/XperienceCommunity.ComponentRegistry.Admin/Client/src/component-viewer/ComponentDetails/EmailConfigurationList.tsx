@@ -5,10 +5,16 @@ import type { EmailConfigurationUsageDto } from './types';
 
 interface EmailConfigurationListProps {
   emailConfigurations: EmailConfigurationUsageDto[];
+  inspectedComponentIdentifier: string;
+  inspectedComponentType: string;
+  inspectedComponentTypeName?: string;
 }
 
 export const EmailConfigurationList: React.FC<EmailConfigurationListProps> = ({
   emailConfigurations,
+  inspectedComponentIdentifier,
+  inspectedComponentType,
+  inspectedComponentTypeName,
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
 
@@ -59,6 +65,9 @@ export const EmailConfigurationList: React.FC<EmailConfigurationListProps> = ({
           <EmailConfigurationListItem
             key={`${config.emailConfigurationId}-${config.contentItemId}`}
             emailConfiguration={config}
+            inspectedComponentIdentifier={inspectedComponentIdentifier}
+            inspectedComponentType={inspectedComponentType}
+            inspectedComponentTypeName={inspectedComponentTypeName}
           />
         ))}
       </div>
