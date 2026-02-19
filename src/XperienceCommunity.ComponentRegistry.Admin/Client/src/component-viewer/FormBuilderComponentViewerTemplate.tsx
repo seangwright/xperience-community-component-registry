@@ -341,8 +341,22 @@ const FormComponentTableRow: React.FC<{
 export const FormBuilderComponentViewerTemplate = (
   props: FormBuilderComponentViewerClientProperties,
 ) => {
+  const [componentFilter, setComponentFilter] = useState('');
+  const [sectionFilter, setSectionFilter] = useState('');
+
   const totalComponents =
     props.formComponents.length + props.formSections.length;
+
+  const filteredFormComponents = props.formComponents.filter((component) =>
+    component.identifier
+      .toLowerCase()
+      .includes(componentFilter.trim().toLowerCase()),
+  );
+  const filteredFormSections = props.formSections.filter((section) =>
+    section.identifier
+      .toLowerCase()
+      .includes(sectionFilter.trim().toLowerCase()),
+  );
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-8">
@@ -429,42 +443,59 @@ export const FormBuilderComponentViewerTemplate = (
               </CardHeader>
               <CardContent className="pt-6">
                 {props.formComponents.length > 0 ? (
-                  <div className="rounded-lg border">
-                    <Table>
-                      <TableHeader>
-                        <TableRow className="bg-slate-50">
-                          <TableHead className="w-10"></TableHead>
-                          <TableHead className="font-semibold !text-slate-700">
-                            Identifier
-                          </TableHead>
-                          <TableHead className="font-semibold !text-slate-700">
-                            Name
-                          </TableHead>
-                          <TableHead className="font-semibold !text-slate-700">
-                            Description
-                          </TableHead>
-                          <TableHead className="font-semibold !text-slate-700">
-                            Icon
-                          </TableHead>
-                          <TableHead className="font-semibold !text-slate-700">
-                            Component Type
-                          </TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {props.formComponents.map((component) => (
-                          <FormComponentTableRow
-                            key={component.identifier}
-                            component={component}
-                            componentType="component"
-                            canViewFormBuilderUsages={
-                              props.canViewFormBuilderUsages
-                            }
-                          />
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </div>
+                  <>
+                    <div className="mb-4">
+                      <input
+                        type="text"
+                        placeholder="Filter by identifier..."
+                        value={componentFilter}
+                        onChange={(e) => setComponentFilter(e.target.value)}
+                        className="w-full px-3 py-2 text-sm text-slate-900 bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent placeholder-slate-500"
+                      />
+                    </div>
+                    {filteredFormComponents.length > 0 ? (
+                      <div className="rounded-lg border">
+                        <Table>
+                          <TableHeader>
+                            <TableRow className="bg-slate-50">
+                              <TableHead className="w-10"></TableHead>
+                              <TableHead className="font-semibold !text-slate-700">
+                                Identifier
+                              </TableHead>
+                              <TableHead className="font-semibold !text-slate-700">
+                                Name
+                              </TableHead>
+                              <TableHead className="font-semibold !text-slate-700">
+                                Description
+                              </TableHead>
+                              <TableHead className="font-semibold !text-slate-700">
+                                Icon
+                              </TableHead>
+                              <TableHead className="font-semibold !text-slate-700">
+                                Component Type
+                              </TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {filteredFormComponents.map((component) => (
+                              <FormComponentTableRow
+                                key={component.identifier}
+                                component={component}
+                                componentType="component"
+                                canViewFormBuilderUsages={
+                                  props.canViewFormBuilderUsages
+                                }
+                              />
+                            ))}
+                          </TableBody>
+                        </Table>
+                      </div>
+                    ) : (
+                      <div className="text-center py-8 text-slate-500">
+                        <p>No components match this identifier filter</p>
+                      </div>
+                    )}
+                  </>
                 ) : (
                   <div className="text-center py-12 text-slate-500">
                     <p className="text-lg">No form components registered</p>
@@ -486,42 +517,59 @@ export const FormBuilderComponentViewerTemplate = (
               </CardHeader>
               <CardContent className="pt-6">
                 {props.formSections.length > 0 ? (
-                  <div className="rounded-lg border">
-                    <Table>
-                      <TableHeader>
-                        <TableRow className="bg-slate-50">
-                          <TableHead className="w-10"></TableHead>
-                          <TableHead className="font-semibold !text-slate-700">
-                            Identifier
-                          </TableHead>
-                          <TableHead className="font-semibold !text-slate-700">
-                            Name
-                          </TableHead>
-                          <TableHead className="font-semibold !text-slate-700">
-                            Description
-                          </TableHead>
-                          <TableHead className="font-semibold !text-slate-700">
-                            Icon
-                          </TableHead>
-                          <TableHead className="font-semibold !text-slate-700">
-                            Component Type
-                          </TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {props.formSections.map((section) => (
-                          <FormComponentTableRow
-                            key={section.identifier}
-                            component={section}
-                            componentType="section"
-                            canViewFormBuilderUsages={
-                              props.canViewFormBuilderUsages
-                            }
-                          />
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </div>
+                  <>
+                    <div className="mb-4">
+                      <input
+                        type="text"
+                        placeholder="Filter by identifier..."
+                        value={sectionFilter}
+                        onChange={(e) => setSectionFilter(e.target.value)}
+                        className="w-full px-3 py-2 text-sm text-slate-900 bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent placeholder-slate-500"
+                      />
+                    </div>
+                    {filteredFormSections.length > 0 ? (
+                      <div className="rounded-lg border">
+                        <Table>
+                          <TableHeader>
+                            <TableRow className="bg-slate-50">
+                              <TableHead className="w-10"></TableHead>
+                              <TableHead className="font-semibold !text-slate-700">
+                                Identifier
+                              </TableHead>
+                              <TableHead className="font-semibold !text-slate-700">
+                                Name
+                              </TableHead>
+                              <TableHead className="font-semibold !text-slate-700">
+                                Description
+                              </TableHead>
+                              <TableHead className="font-semibold !text-slate-700">
+                                Icon
+                              </TableHead>
+                              <TableHead className="font-semibold !text-slate-700">
+                                Component Type
+                              </TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {filteredFormSections.map((section) => (
+                              <FormComponentTableRow
+                                key={section.identifier}
+                                component={section}
+                                componentType="section"
+                                canViewFormBuilderUsages={
+                                  props.canViewFormBuilderUsages
+                                }
+                              />
+                            ))}
+                          </TableBody>
+                        </Table>
+                      </div>
+                    ) : (
+                      <div className="text-center py-8 text-slate-500">
+                        <p>No components match this identifier filter</p>
+                      </div>
+                    )}
+                  </>
                 ) : (
                   <div className="text-center py-12 text-slate-500">
                     <p className="text-lg">No form sections registered</p>

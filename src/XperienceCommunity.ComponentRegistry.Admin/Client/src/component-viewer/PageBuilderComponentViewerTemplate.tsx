@@ -195,8 +195,26 @@ const ComponentTableRow: React.FC<{
 export const PageBuilderComponentViewerTemplate = (
   props: PageBuilderComponentViewerClientProperties,
 ) => {
+  const [widgetFilter, setWidgetFilter] = useState('');
+  const [sectionFilter, setSectionFilter] = useState('');
+  const [templateFilter, setTemplateFilter] = useState('');
+
   const totalComponents =
     props.widgets.length + props.sections.length + props.pageTemplates.length;
+
+  const filteredWidgets = props.widgets.filter((widget) =>
+    widget.identifier.toLowerCase().includes(widgetFilter.trim().toLowerCase()),
+  );
+  const filteredSections = props.sections.filter((section) =>
+    section.identifier
+      .toLowerCase()
+      .includes(sectionFilter.trim().toLowerCase()),
+  );
+  const filteredTemplates = props.pageTemplates.filter((template) =>
+    template.identifier
+      .toLowerCase()
+      .includes(templateFilter.trim().toLowerCase()),
+  );
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-8">
@@ -301,42 +319,59 @@ export const PageBuilderComponentViewerTemplate = (
               </CardHeader>
               <CardContent className="pt-6">
                 {props.widgets.length > 0 ? (
-                  <div className="rounded-lg border">
-                    <Table>
-                      <TableHeader>
-                        <TableRow className="bg-slate-50">
-                          <TableHead className="w-10"></TableHead>
-                          <TableHead className="font-semibold !text-slate-700">
-                            Identifier
-                          </TableHead>
-                          <TableHead className="font-semibold !text-slate-700">
-                            Name
-                          </TableHead>
-                          <TableHead className="font-semibold !text-slate-700">
-                            Description
-                          </TableHead>
-                          <TableHead className="font-semibold !text-slate-700">
-                            Icon
-                          </TableHead>
-                          <TableHead className="font-semibold !text-slate-700">
-                            Component Type
-                          </TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {props.widgets.map((widget, _index) => (
-                          <ComponentTableRow
-                            key={widget.identifier}
-                            component={widget}
-                            componentType="widget"
-                            canViewPageBuilderUsages={
-                              props.canViewPageBuilderUsages
-                            }
-                          />
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </div>
+                  <>
+                    <div className="mb-4">
+                      <input
+                        type="text"
+                        placeholder="Filter by identifier..."
+                        value={widgetFilter}
+                        onChange={(e) => setWidgetFilter(e.target.value)}
+                        className="w-full px-3 py-2 text-sm text-slate-900 bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent placeholder-slate-500"
+                      />
+                    </div>
+                    {filteredWidgets.length > 0 ? (
+                      <div className="rounded-lg border">
+                        <Table>
+                          <TableHeader>
+                            <TableRow className="bg-slate-50">
+                              <TableHead className="w-10"></TableHead>
+                              <TableHead className="font-semibold !text-slate-700">
+                                Identifier
+                              </TableHead>
+                              <TableHead className="font-semibold !text-slate-700">
+                                Name
+                              </TableHead>
+                              <TableHead className="font-semibold !text-slate-700">
+                                Description
+                              </TableHead>
+                              <TableHead className="font-semibold !text-slate-700">
+                                Icon
+                              </TableHead>
+                              <TableHead className="font-semibold !text-slate-700">
+                                Component Type
+                              </TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {filteredWidgets.map((widget, _index) => (
+                              <ComponentTableRow
+                                key={widget.identifier}
+                                component={widget}
+                                componentType="widget"
+                                canViewPageBuilderUsages={
+                                  props.canViewPageBuilderUsages
+                                }
+                              />
+                            ))}
+                          </TableBody>
+                        </Table>
+                      </div>
+                    ) : (
+                      <div className="text-center py-8 text-slate-500">
+                        <p>No components match this identifier filter</p>
+                      </div>
+                    )}
+                  </>
                 ) : (
                   <div className="text-center py-12 text-slate-500">
                     <p className="text-lg">No widgets registered</p>
@@ -358,42 +393,59 @@ export const PageBuilderComponentViewerTemplate = (
               </CardHeader>
               <CardContent className="pt-6">
                 {props.sections.length > 0 ? (
-                  <div className="rounded-lg border">
-                    <Table>
-                      <TableHeader>
-                        <TableRow className="bg-slate-50">
-                          <TableHead className="w-10"></TableHead>
-                          <TableHead className="font-semibold !text-slate-700">
-                            Identifier
-                          </TableHead>
-                          <TableHead className="font-semibold !text-slate-700">
-                            Name
-                          </TableHead>
-                          <TableHead className="font-semibold !text-slate-700">
-                            Description
-                          </TableHead>
-                          <TableHead className="font-semibold !text-slate-700">
-                            Icon
-                          </TableHead>
-                          <TableHead className="font-semibold !text-slate-700">
-                            Component Type
-                          </TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {props.sections.map((section, _index) => (
-                          <ComponentTableRow
-                            key={section.identifier}
-                            component={section}
-                            componentType="section"
-                            canViewPageBuilderUsages={
-                              props.canViewPageBuilderUsages
-                            }
-                          />
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </div>
+                  <>
+                    <div className="mb-4">
+                      <input
+                        type="text"
+                        placeholder="Filter by identifier..."
+                        value={sectionFilter}
+                        onChange={(e) => setSectionFilter(e.target.value)}
+                        className="w-full px-3 py-2 text-sm text-slate-900 bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent placeholder-slate-500"
+                      />
+                    </div>
+                    {filteredSections.length > 0 ? (
+                      <div className="rounded-lg border">
+                        <Table>
+                          <TableHeader>
+                            <TableRow className="bg-slate-50">
+                              <TableHead className="w-10"></TableHead>
+                              <TableHead className="font-semibold !text-slate-700">
+                                Identifier
+                              </TableHead>
+                              <TableHead className="font-semibold !text-slate-700">
+                                Name
+                              </TableHead>
+                              <TableHead className="font-semibold !text-slate-700">
+                                Description
+                              </TableHead>
+                              <TableHead className="font-semibold !text-slate-700">
+                                Icon
+                              </TableHead>
+                              <TableHead className="font-semibold !text-slate-700">
+                                Component Type
+                              </TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {filteredSections.map((section, _index) => (
+                              <ComponentTableRow
+                                key={section.identifier}
+                                component={section}
+                                componentType="section"
+                                canViewPageBuilderUsages={
+                                  props.canViewPageBuilderUsages
+                                }
+                              />
+                            ))}
+                          </TableBody>
+                        </Table>
+                      </div>
+                    ) : (
+                      <div className="text-center py-8 text-slate-500">
+                        <p>No components match this identifier filter</p>
+                      </div>
+                    )}
+                  </>
                 ) : (
                   <div className="text-center py-12 text-slate-500">
                     <p className="text-lg">No sections registered</p>
@@ -415,45 +467,62 @@ export const PageBuilderComponentViewerTemplate = (
               </CardHeader>
               <CardContent className="pt-6">
                 {props.pageTemplates.length > 0 ? (
-                  <div className="rounded-lg border">
-                    <Table>
-                      <TableHeader>
-                        <TableRow className="bg-slate-50">
-                          <TableHead className="w-10"></TableHead>
-                          <TableHead className="font-semibold !text-slate-700">
-                            Identifier
-                          </TableHead>
-                          <TableHead className="font-semibold !text-slate-700">
-                            Name
-                          </TableHead>
-                          <TableHead className="font-semibold !text-slate-700">
-                            Description
-                          </TableHead>
-                          <TableHead className="font-semibold !text-slate-700">
-                            Icon
-                          </TableHead>
-                          <TableHead className="font-semibold !text-slate-700">
-                            Component Type
-                          </TableHead>
-                          <TableHead className="font-semibold !text-slate-700">
-                            Content Types
-                          </TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {props.pageTemplates.map((template, _index) => (
-                          <ComponentTableRow
-                            key={template.identifier}
-                            component={template}
-                            componentType="template"
-                            canViewPageBuilderUsages={
-                              props.canViewPageBuilderUsages
-                            }
-                          />
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </div>
+                  <>
+                    <div className="mb-4">
+                      <input
+                        type="text"
+                        placeholder="Filter by identifier..."
+                        value={templateFilter}
+                        onChange={(e) => setTemplateFilter(e.target.value)}
+                        className="w-full px-3 py-2 text-sm text-slate-900 bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent placeholder-slate-500"
+                      />
+                    </div>
+                    {filteredTemplates.length > 0 ? (
+                      <div className="rounded-lg border">
+                        <Table>
+                          <TableHeader>
+                            <TableRow className="bg-slate-50">
+                              <TableHead className="w-10"></TableHead>
+                              <TableHead className="font-semibold !text-slate-700">
+                                Identifier
+                              </TableHead>
+                              <TableHead className="font-semibold !text-slate-700">
+                                Name
+                              </TableHead>
+                              <TableHead className="font-semibold !text-slate-700">
+                                Description
+                              </TableHead>
+                              <TableHead className="font-semibold !text-slate-700">
+                                Icon
+                              </TableHead>
+                              <TableHead className="font-semibold !text-slate-700">
+                                Component Type
+                              </TableHead>
+                              <TableHead className="font-semibold !text-slate-700">
+                                Content Types
+                              </TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {filteredTemplates.map((template, _index) => (
+                              <ComponentTableRow
+                                key={template.identifier}
+                                component={template}
+                                componentType="template"
+                                canViewPageBuilderUsages={
+                                  props.canViewPageBuilderUsages
+                                }
+                              />
+                            ))}
+                          </TableBody>
+                        </Table>
+                      </div>
+                    ) : (
+                      <div className="text-center py-8 text-slate-500">
+                        <p>No components match this identifier filter</p>
+                      </div>
+                    )}
+                  </>
                 ) : (
                   <div className="text-center py-12 text-slate-500">
                     <p className="text-lg">No page templates registered</p>
