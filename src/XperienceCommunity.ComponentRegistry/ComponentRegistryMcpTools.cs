@@ -148,6 +148,15 @@ public class ComponentRegistryMcpTools(
                             Success: true,
                             ErrorMessage: null);
                     }
+
+                    return new WebPageUrlResponse(
+                        WebPageItemId: webPageItemId,
+                        LanguageName: languageName,
+                        IsPublished: false,
+                        UrlType: null,
+                        Url: null,
+                        Success: false,
+                        ErrorMessage: "Shareable preview URL could not be generated for the requested page.");
                 }
                 catch (Exception shareableEx)
                 {
