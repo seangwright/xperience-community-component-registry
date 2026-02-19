@@ -10,7 +10,7 @@ public interface IComponentRegistryLocalizationService
     /// <summary>
     /// Resolves and localizes a display string.
     /// </summary>
-    string Localize(string value);
+    public string Localize(string value);
 }
 
 /// <summary>
