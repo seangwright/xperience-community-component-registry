@@ -1,9 +1,9 @@
 using Kentico.Xperience.Admin.Base;
 using Kentico.Xperience.Admin.DigitalMarketing.UIPages;
 
-using InternalEmailBuilderTab = Kentico.Xperience.Admin.DigitalMarketing.UIPages.Internal.EmailBuilderTab;
-
 using XperienceCommunity.ComponentRegistry.Admin;
+
+using InternalEmailBuilderTab = Kentico.Xperience.Admin.DigitalMarketing.UIPages.Internal.EmailBuilderTab;
 
 [assembly: UIPage(
     uiPageType: typeof(EmailBuilderComponentViewerPage),
