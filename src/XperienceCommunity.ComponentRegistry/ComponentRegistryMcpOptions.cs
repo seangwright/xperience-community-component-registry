@@ -19,4 +19,9 @@ public class ComponentRegistryMcpOptions
     /// HTTP endpoint path for MCP transport.
     /// </summary>
     public string EndpointPath { get; set; } = "/mcp/component-registry";
+
+    /// <summary>
+    /// Username of administration user to represent agent-driven actions
+    /// </summary>
+    public string AgentAdminUserName { get; set; } = "mcpAgent";
 }
