@@ -63,7 +63,7 @@ Example: VS Code and GitHub Copilot `.vscode/mcp.json`
 ```json
 {
   "servers": {
-    "xperience-component-registry": {
+    "xperience-community.component-registry": {
       "type": "http",
       "url": "http://localhost:53856/mcp/component-registry"
     }

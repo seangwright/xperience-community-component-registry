@@ -107,7 +107,7 @@ Example: VS Code and GitHub Copilot `.vscode/mcp.json`
       "url": "https://docs.kentico.com/mcp"
     },
 
-    "xperience-component-registry": {
+    "xperience-community.component-registry": {
       "type": "http",
       "url": "http://localhost:53856/mcp/component-registry"
     }
