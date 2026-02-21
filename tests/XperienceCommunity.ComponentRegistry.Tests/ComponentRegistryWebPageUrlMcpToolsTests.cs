@@ -1,19 +1,17 @@
 using System.Reflection;
 
 using CMS.ContentEngine;
+using CMS.ContentEngine.Internal;
 using CMS.DataEngine;
 using CMS.Membership;
+using CMS.Websites;
 using CMS.Websites.Internal;
 
 using Kentico.Content.Web.Mvc.Internal;
 
-using CMS.Websites;
-
 using Microsoft.Extensions.Options;
 
 using NSubstitute;
-
-using CMS.ContentEngine.Internal;
 
 namespace XperienceCommunity.ComponentRegistry.Tests;
 
