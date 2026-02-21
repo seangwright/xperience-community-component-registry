@@ -53,6 +53,8 @@ public static class PreviewUrlState
 {
     public const string Existing = "Existing";
     public const string Generated = "Generated";
+    public const string Removed = "Removed";
+    public const string NotFound = "NotFound";
 }
 
 internal static class ComponentRegistryMcpToolsValidation

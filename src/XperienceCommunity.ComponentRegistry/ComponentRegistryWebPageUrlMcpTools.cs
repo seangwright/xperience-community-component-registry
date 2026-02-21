@@ -85,7 +85,6 @@ public class ComponentRegistryWebPageUrlMcpTools(
 
         try
         {
-            int itemWebsiteChannelId = (await webPageItemProvider.GetAsync(webPageItemId)).WebPageItemWebsiteChannelID;
             string configuredAgentUserName = options.AgentAdminUserName?.Trim() ?? string.Empty;
             if (string.IsNullOrWhiteSpace(configuredAgentUserName))
             {
@@ -100,9 +99,9 @@ public class ComponentRegistryWebPageUrlMcpTools(
                     PreviewUrlState: null);
             }
 
-            int userID = (await userInfoProvider.Get().WhereEquals(nameof(UserInfo.UserName), configuredAgentUserName).GetEnumerableTypedResultAsync())
-                .Select(u => u.UserID)
-                .FirstOrDefault();
+            int itemWebsiteChannelId = await GetWebsiteChannelIdAsync(webPageItemId);
+
+            int userID = await GetAgentUserIdAsync(configuredAgentUserName);
             if (userID <= 0)
             {
                 return new WebPageUrlResponse(
@@ -117,16 +116,11 @@ public class ComponentRegistryWebPageUrlMcpTools(
             }
 
             var webPageManager = webPageManagerFactory.Create(itemWebsiteChannelId, userID);
-            var languageMetadata = await webPageManager.GetContentItemLanguageMetadata(
+            bool previewUrlAlreadyExisted = await EnsureShareablePreviewGuidAsync(
+                webPageManager,
                 webPageItemId,
-                languageName);
-
-            bool previewUrlAlreadyExisted = languageMetadata.GetShareablePreviewGUID().HasValue;
-            if (!previewUrlAlreadyExisted)
-            {
-                languageMetadata.SetShareablePreviewGUID(Guid.NewGuid());
-                await webPageManager.UpdateLanguageMetadata(languageMetadata, cancellationToken);
-            }
+                languageName,
+                cancellationToken);
 
             string shareableUrl = await shareablePreviewLinkGenerator.Generate(webPageItemId, languageName, cancellationToken);
             if (!string.IsNullOrWhiteSpace(shareableUrl))
@@ -166,5 +160,122 @@ public class ComponentRegistryWebPageUrlMcpTools(
                 ErrorMessage: $"Failed to generate shareable preview URL for web page {webPageItemId}: {ex.Message}",
                 PreviewUrlState: null);
         }
+    }
+
+    /// <summary>
+    /// Removes shareable preview URL metadata for a web page language variant.
+    /// </summary>
+    [McpServerTool(Name = "component_registry_remove_web_page_preview_url")]
+    [Description("Remove shareable preview URL metadata for an unpublished web page variant to clean up previously generated preview links.")]
+    public async Task<WebPageUrlResponse> RemoveWebPagePreviewUrl(
+        int webPageItemId,
+        string languageName,
+        CancellationToken cancellationToken = default)
+    {
+        ComponentRegistryMcpToolsValidation.ValidateWebPageUrlRequest(webPageItemId, languageName);
+
+        try
+        {
+            string configuredAgentUserName = options.AgentAdminUserName?.Trim() ?? string.Empty;
+            if (string.IsNullOrWhiteSpace(configuredAgentUserName))
+            {
+                return new WebPageUrlResponse(
+                    WebPageItemId: webPageItemId,
+                    LanguageName: languageName,
+                    IsPublished: false,
+                    UrlType: null,
+                    Url: null,
+                    Success: false,
+                    ErrorMessage: $"Preview URL cleanup requires a configured agent administration user. Set {ComponentRegistryMcpOptions.SectionName}:AgentAdminUserName and create that administration user in Xperience.",
+                    PreviewUrlState: null);
+            }
+
+            int itemWebsiteChannelId = await GetWebsiteChannelIdAsync(webPageItemId);
+
+            int userID = await GetAgentUserIdAsync(configuredAgentUserName);
+            if (userID <= 0)
+            {
+                return new WebPageUrlResponse(
+                    WebPageItemId: webPageItemId,
+                    LanguageName: languageName,
+                    IsPublished: false,
+                    UrlType: null,
+                    Url: null,
+                    Success: false,
+                    ErrorMessage: $"Preview URL cleanup requires administration user '{configuredAgentUserName}'. Create this user in Xperience administration (or update {ComponentRegistryMcpOptions.SectionName}:AgentAdminUserName) to enable preview URL cleanup.",
+                    PreviewUrlState: null);
+            }
+
+            var webPageManager = webPageManagerFactory.Create(itemWebsiteChannelId, userID);
+            var languageMetadata = await webPageManager.GetContentItemLanguageMetadata(
+                webPageItemId,
+                languageName);
+
+            if (!languageMetadata.GetShareablePreviewGUID().HasValue)
+            {
+                return new WebPageUrlResponse(
+                    WebPageItemId: webPageItemId,
+                    LanguageName: languageName,
+                    IsPublished: false,
+                    UrlType: WebPageUrlType.ShareablePreview,
+                    Url: null,
+                    Success: true,
+                    ErrorMessage: null,
+                    PreviewUrlState: PreviewUrlState.NotFound);
+            }
+
+            languageMetadata.SetShareablePreviewGUID(null);
+            await webPageManager.UpdateLanguageMetadata(languageMetadata, cancellationToken);
+
+            return new WebPageUrlResponse(
+                WebPageItemId: webPageItemId,
+                LanguageName: languageName,
+                IsPublished: false,
+                UrlType: WebPageUrlType.ShareablePreview,
+                Url: null,
+                Success: true,
+                ErrorMessage: null,
+                PreviewUrlState: PreviewUrlState.Removed);
+        }
+        catch (Exception ex)
+        {
+            return new WebPageUrlResponse(
+                WebPageItemId: webPageItemId,
+                LanguageName: languageName,
+                IsPublished: false,
+                UrlType: null,
+                Url: null,
+                Success: false,
+                ErrorMessage: $"Failed to remove shareable preview URL for web page {webPageItemId}: {ex.Message}",
+                PreviewUrlState: null);
+        }
+    }
+
+    protected virtual async Task<int> GetWebsiteChannelIdAsync(int webPageItemId) =>
+        (await webPageItemProvider.GetAsync(webPageItemId)).WebPageItemWebsiteChannelID;
+
+    protected virtual async Task<int> GetAgentUserIdAsync(string configuredAgentUserName) =>
+        (await userInfoProvider.Get().WhereEquals(nameof(UserInfo.UserName), configuredAgentUserName).GetEnumerableTypedResultAsync())
+            .Select(u => u.UserID)
+            .FirstOrDefault();
+
+    protected virtual async Task<bool> EnsureShareablePreviewGuidAsync(
+        IWebPageManager webPageManager,
+        int webPageItemId,
+        string languageName,
+        CancellationToken cancellationToken)
+    {
+        var languageMetadata = await webPageManager.GetContentItemLanguageMetadata(
+            webPageItemId,
+            languageName);
+
+        bool previewUrlAlreadyExisted = languageMetadata.GetShareablePreviewGUID().HasValue;
+        if (!previewUrlAlreadyExisted)
+        {
+            languageMetadata.SetShareablePreviewGUID(Guid.NewGuid());
+            await webPageManager.UpdateLanguageMetadata(languageMetadata, cancellationToken);
+        }
+
+        return previewUrlAlreadyExisted;
     }
 }
