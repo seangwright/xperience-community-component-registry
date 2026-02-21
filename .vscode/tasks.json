@@ -28,6 +28,24 @@
       }
     },
     {
+      "label": ".NET: test (Solution)",
+      "type": "shell",
+      "command": "dotnet test",
+      "problemMatcher": "$msCompile",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "group": "test",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared",
+        "showReuseMessage": true,
+        "clear": false
+      }
+    },
+    {
       "type": "shell",
       "command": "dotnet",
       "args": [

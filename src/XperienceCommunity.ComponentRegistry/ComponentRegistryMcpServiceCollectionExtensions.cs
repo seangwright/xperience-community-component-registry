@@ -30,7 +30,7 @@ public static class ComponentRegistryMcpServiceCollectionExtensions
 
         services.AddMcpServer()
             .WithHttpTransport()
-            .WithToolsFromAssembly(typeof(ComponentRegistryMcpTools).Assembly);
+            .WithToolsFromAssembly(typeof(ComponentRegistryDefinitionMcpTools).Assembly);
 
         return services;
     }
