@@ -12,6 +12,8 @@
 
 This project enables administrators to view all registered custom components in an Xperience by Kentico application, like Page Builder widgets, and explore which channels and web pages use those components all through a friendly user interface in the Xperience administration.
 
+It optionally exposes the entire component registry over an in-application hosted MCP server, giving agents the ability to identify where components are used across channels, and even visit Page Builder pages using components to visually validate their configuration and design.
+
 <div style="display: flex; gap: 1rem; flex-wrap: wrap">
   <a href="https://raw.githubusercontent.com/seangwright/xperience-community-component-registry/main/images/component-registry-admin-page-builder.jpg">
     <img src="https://raw.githubusercontent.com/seangwright/xperience-community-component-registry/main/images/component-registry-admin-page-builder.jpg"
